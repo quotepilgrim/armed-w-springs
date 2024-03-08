@@ -54,6 +54,14 @@ local walls = {
 	39,
 }
 
+local doors = {
+	33, 34, 35, 36, 41, 42, 43, 44
+}
+
+local goal = 25
+local box = 26
+local box_on_goal = 27
+
 local player = {}
 
 local function player_to_map_position(x, y)
@@ -61,33 +69,86 @@ local function player_to_map_position(x, y)
 end
 
 local function check_wall(pos)
-	for _, v in pairs(walls) do
-		if level.layers[1].data[pos] == v then
-			return true
+	for _, t in pairs({walls, doors}) do
+		for _, v in pairs(t) do
+			if level.layers[1].data[pos] == v then
+				return true
+			end
 		end
 	end
 	return false
 end
 
-local function change_level(level_name, x, y)
+local function nuke_level()
+	package.loaded["levels." .. current_level] = nil
+	_G["levels." .. current_level] = nil
+end
+
+local function open_entrance()
+	if player.facing == dirs.north then
+		level.layers[1].data[player_to_map_position(8,13)] = 10
+		level.layers[1].data[player_to_map_position(8,14)] = 10
+	end
+	
+	if player.facing == dirs.east then
+		level.layers[1].data[player_to_map_position(0,7)] = 10
+		level.layers[1].data[player_to_map_position(1,7)] = 10
+	end
+
+	if player.facing == dirs.south then
+		level.layers[1].data[player_to_map_position(8,1)] = 10
+		level.layers[1].data[player_to_map_position(8,0)] = 10
+	end
+	
+	if player.facing == dirs.west then
+		level.layers[1].data[player_to_map_position(15,7)] = 10
+		level.layers[1].data[player_to_map_position(16,7)] = 10
+	end
+end
+
+local function change_level(level_name, x, y, open)
 	if level_name then
+		nuke_level()
 		level = require("levels." .. level_name)
 		last_entrance.x = x
 		last_entrance.y = y
 		player.x = x
 		player.y = y
 		current_level = level_name
+		if open then
+			open_entrance()
+		end
 	end
 end
 
 local function reset_level()
+	nuke_level()
 	level = require("levels." .. current_level)
 	player.x = last_entrance.x
 	player.y = last_entrance.y
-	if player.y == 2 then player.facing = dirs.south end
-	if player.x == 14 then player.facing = dirs.west end
-	if player.y == 12 then player.facing = dirs.north end
-	if player.x == 2 then player.facing = dirs.east end
+	if player.y == 2 then
+		player.facing = dirs.south
+	end
+	if player.x == 14 then
+		player.facing = dirs.west
+	end
+	if player.y == 12 then
+		player.facing = dirs.north
+	end
+	if player.x == 2 then
+		player.facing = dirs.east
+	end
+	open_entrance()
+end
+
+local function nuke_doors()
+	for i, v in ipairs(level.layers[1].data) do
+		for _, d in ipairs(doors) do
+			if v == d then
+				level.layers[1].data[i] = 10
+			end
+		end
+	end
 end
 
 function player.move()
@@ -117,15 +178,14 @@ function player.move()
 		player.x = player.x - 1
 	end
 
-	-- 8,1; 15,7; 8,13; 1,7 
 	if player.x == 8 and player.y == 1 then
-		change_level(level.properties.north, 8, 12)
+		change_level(level.properties.north, 8, 12, true)
 	elseif player.x == 15 and player.y == 7 then
-		change_level(level.properties.east, 2, 7)
+		change_level(level.properties.east, 2, 7, true)
 	elseif player.x == 8 and player.y == 13 then
-		change_level(level.properties.south, 8, 2)
+		change_level(level.properties.south, 8, 2, true)
 	elseif player.x == 1 and player.y == 7 then
-		change_level(level.properties.west, 14, 7)
+		change_level(level.properties.west, 14, 7, true)
 	end
 end
 
@@ -198,6 +258,7 @@ function love.update(dt)
 			page_lock = true
 			local new_level = level_names[level_ids[current_level] + 1]
 			if new_level then
+				player.facing = dirs.north
 				change_level(new_level, 8, 12)
 			end
 		end
@@ -206,6 +267,7 @@ function love.update(dt)
 			page_lock = true
 			local new_level = level_names[level_ids[current_level] - 1]
 			if new_level then
+				player.facing = dirs.north
 				change_level(new_level, 8, 12)
 			end
 		end
@@ -215,6 +277,10 @@ function love.update(dt)
 	
 	if love.keyboard.isDown("r") then
 		reset_level()
+	end
+
+	if love.keyboard.isDown("delete") then
+		nuke_doors()
 	end
 
 
