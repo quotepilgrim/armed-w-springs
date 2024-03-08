@@ -1,7 +1,20 @@
 local level = require("levels.level1")
+local level_names = require("levels.list")
 local current_level = "level1"
+
+for i, v in ipairs(arg) do
+	if v == "-w" then
+		if tonumber(arg[i+1]) < 1 or tonumber(arg[i+1]) > #level_names then
+			break
+		end
+		level = require("levels.level" .. arg[i+1])
+		current_level = "level" .. arg[i+1]
+		print(arg[i+1])
+	end
+end
+
 local tiles = {}
-local scale = 4
+local scale = 3
 local spring = false
 local dirs = {
 	["north"] = 0,
@@ -14,7 +27,6 @@ local move_timer = 0
 local key_count = 0
 local sheet, lock, page_lock
 local up, down, left, right
-local level_names = require("levels.list")
 local level_ids = {}
 local last_entrance = {x = 8, y = 12}
 

@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "level1.tmx",
+    "activeFile": "layout.tmx",
     "automapping.whileDrawing": true,
     "expandedProjectPaths": [
         "."
@@ -18,8 +18,8 @@
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 125.33333333333331,
-                "y": -128.33333333333337
+                "x": 86.66666666666666,
+                "y": -131
             }
         },
         "level1.tmx": {
@@ -106,8 +106,8 @@
             "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 135.33333333333331,
-                "y": 119.83333333333331
+                "x": 134.66666666666666,
+                "y": 119.49999999999999
             }
         },
         "level5.tmx": {
@@ -180,30 +180,28 @@
     "map.tileWidth": 16,
     "map.width": 17,
     "openFiles": [
-        "level_tiles.tsx",
-        "level1.tmx",
-        "level2.tmx",
-        "level3.tmx",
-        "level4.tmx",
         "rules.tmx",
+        "level_tiles.tsx",
         "layout.tmx",
-        "num_tiles.tsx"
+        "level4.tmx",
+        "level5.tmx",
+        "level7.tmx"
     ],
     "project": "springloaded.tiled-project",
     "property.type": "string",
     "recentFiles": [
+        "rules.tmx",
+        "level_tiles.tsx",
+        "level7.tmx",
+        "level5.tmx",
+        "level4.tmx",
+        "layout.tmx",
         "level11.tmx",
         "level12.tmx",
         "level13.tmx",
         "level14.tmx",
         "level15.tmx",
-        "level16.tmx",
-        "level10.tmx",
-        "level9.tmx",
-        "level8.tmx",
-        "level5.tmx",
-        "level6.tmx",
-        "level7.tmx"
+        "level16.tmx"
     ],
     "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
     "tileset.lastUsedFormat": "tsx",

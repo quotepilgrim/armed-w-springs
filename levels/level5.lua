@@ -12,9 +12,9 @@ return {
   nextlayerid = 2,
   nextobjectid = 1,
   properties = {
-    ["east"] = "level8",
+    ["east"] = "level7",
     ["south"] = "level4",
-    ["west"] = "level7"
+    ["west"] = "level8"
   },
   tilesets = {
     {
