@@ -1,0 +1,113 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "level1.tmx",
+    "automapping.whileDrawing": true,
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        ":/automap-tiles.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 3,
+            "scaleInEditor": 5.5
+        },
+        "layout.tmx": {
+            "scale": 2,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 141,
+                "y": 92.75
+            }
+        },
+        "level1.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 141.33333333333331,
+                "y": 116.16666666666669
+            }
+        },
+        "level2.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 133.66666666666666,
+                "y": 119.16666666666669
+            }
+        },
+        "level3.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 130.66666666666666,
+                "y": 126.16666666666669
+            }
+        },
+        "level4.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 134.33333333333331,
+                "y": 119.16666666666669
+            }
+        },
+        "level_tiles.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 3,
+            "scaleInEditor": 5.5
+        },
+        "num_tiles.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "rules.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": -0.6666666666666572,
+                "y": -40.5
+            }
+        }
+    },
+    "last.exportedFilePath": "/home/pilgrim/Documents/jam0/levels",
+    "last.externalTilesetPath": "/home/pilgrim/Documents/jam0",
+    "last.imagePath": "/home/pilgrim/Documents/jam0/graphics",
+    "map.fixedSize": false,
+    "map.height": 15,
+    "map.lastUsedExportFilter": "Lua files (*.lua)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 17,
+    "openFiles": [
+        "level_tiles.tsx",
+        "level1.tmx",
+        "level2.tmx",
+        "level3.tmx",
+        "level4.tmx",
+        "rules.tmx"
+    ],
+    "project": "springloaded.tiled-project",
+    "property.type": "string",
+    "recentFiles": [
+        "num_tiles.tsx",
+        "level_tiles.tsx",
+        "rules.tmx",
+        "level4.tmx",
+        "level3.tmx",
+        "level2.tmx",
+        "level1.tmx",
+        ":/automap-tiles.tsx"
+    ],
+    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    },
+    "tileset.transparentColor": "#000000",
+    "tileset.useTransparentColor": true
+}
