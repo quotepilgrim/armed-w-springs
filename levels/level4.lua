@@ -11,7 +11,9 @@ return {
   tileheight = 16,
   nextlayerid = 2,
   nextobjectid = 1,
-  properties = {},
+  properties = {
+    ["south"] = "level3"
+  },
   tilesets = {
     {
       name = "level_tiles",

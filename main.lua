@@ -16,6 +16,7 @@ local sheet, lock, page_lock
 local up, down, left, right
 local level_names = require("levels.list")
 local level_ids = {}
+local last_entrance = {x = 8, y = 12}
 
 for i, v in pairs(level_names) do
 	level_ids[v] = i
@@ -56,7 +57,6 @@ local walls = {
 local player = {}
 
 local function player_to_map_position(x, y)
-	print(player.x, player.y, player.x + 1 + player.y * level.width)
 	return x + 1 + y * level.width
 end
 
@@ -67,6 +67,27 @@ local function check_wall(pos)
 		end
 	end
 	return false
+end
+
+local function change_level(level_name, x, y)
+	if level_name then
+		level = require("levels." .. level_name)
+		last_entrance.x = x
+		last_entrance.y = y
+		player.x = x
+		player.y = y
+		current_level = level_name
+	end
+end
+
+local function reset_level()
+	level = require("levels." .. current_level)
+	player.x = last_entrance.x
+	player.y = last_entrance.y
+	if player.y == 2 then player.facing = dirs.south end
+	if player.x == 14 then player.facing = dirs.west end
+	if player.y == 12 then player.facing = dirs.north end
+	if player.x == 2 then player.facing = dirs.east end
 end
 
 function player.move()
@@ -95,6 +116,17 @@ function player.move()
 		end
 		player.x = player.x - 1
 	end
+
+	-- 8,1; 15,7; 8,13; 1,7 
+	if player.x == 8 and player.y == 1 then
+		change_level(level.properties.north, 8, 12)
+	elseif player.x == 15 and player.y == 7 then
+		change_level(level.properties.east, 2, 7)
+	elseif player.x == 8 and player.y == 13 then
+		change_level(level.properties.south, 8, 2)
+	elseif player.x == 1 and player.y == 7 then
+		change_level(level.properties.west, 14, 7)
+	end
 end
 
 function love.load()
@@ -104,7 +136,7 @@ function love.load()
 
 	player.quads = {}
 	player.x = 8
-	player.y = 11
+	player.y = 12
 	player.normal = love.graphics.newImage("graphics/char_normal.png")
 	player.facing = dirs.north
 	player.frame = 0
@@ -166,8 +198,7 @@ function love.update(dt)
 			page_lock = true
 			local new_level = level_names[level_ids[current_level] + 1]
 			if new_level then
-				level = require("levels." .. new_level)
-				current_level = new_level
+				change_level(new_level, 8, 12)
 			end
 		end
 	elseif love.keyboard.isDown("pageup") then
@@ -175,12 +206,15 @@ function love.update(dt)
 			page_lock = true
 			local new_level = level_names[level_ids[current_level] - 1]
 			if new_level then
-				level = require("levels." .. new_level)
-				current_level = new_level
+				change_level(new_level, 8, 12)
 			end
 		end
 	else
 		page_lock = false
+	end
+	
+	if love.keyboard.isDown("r") then
+		reset_level()
 	end
 
 
