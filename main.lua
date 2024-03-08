@@ -3,13 +3,13 @@ local level_names = require("levels.list")
 local current_level = "level1"
 
 for i, v in ipairs(arg) do
-	if v == "-w" then
-		if tonumber(arg[i+1]) < 1 or tonumber(arg[i+1]) > #level_names then
+	if v == "--warp" or v == "-w" then
+		if tonumber(arg[i + 1]) < 1 or tonumber(arg[i + 1]) > #level_names then
 			break
 		end
-		level = require("levels.level" .. arg[i+1])
-		current_level = "level" .. arg[i+1]
-		print(arg[i+1])
+		level = require("levels.level" .. arg[i + 1])
+		current_level = "level" .. arg[i + 1]
+		print(arg[i + 1])
 	end
 end
 
@@ -28,7 +28,7 @@ local key_count = 0
 local sheet, lock, page_lock
 local up, down, left, right
 local level_ids = {}
-local last_entrance = {x = 8, y = 12}
+local last_entrance = { x = 8, y = 12 }
 
 for i, v in pairs(level_names) do
 	level_ids[v] = i
@@ -67,7 +67,14 @@ local walls = {
 }
 
 local doors = {
-	33, 34, 35, 36, 41, 42, 43, 44
+	33,
+	34,
+	35,
+	36,
+	41,
+	42,
+	43,
+	44,
 }
 
 local goal = 25
@@ -81,7 +88,7 @@ local function player_to_map_position(x, y)
 end
 
 local function check_wall(pos)
-	for _, t in pairs({walls, doors}) do
+	for _, t in pairs({ walls, doors }) do
 		for _, v in pairs(t) do
 			if level.layers[1].data[pos] == v then
 				return true
@@ -98,23 +105,23 @@ end
 
 local function open_entrance()
 	if player.facing == dirs.north then
-		level.layers[1].data[player_to_map_position(8,13)] = 10
-		level.layers[1].data[player_to_map_position(8,14)] = 10
+		level.layers[1].data[player_to_map_position(8, 13)] = 10
+		level.layers[1].data[player_to_map_position(8, 14)] = 10
 	end
-	
+
 	if player.facing == dirs.east then
-		level.layers[1].data[player_to_map_position(0,7)] = 10
-		level.layers[1].data[player_to_map_position(1,7)] = 10
+		level.layers[1].data[player_to_map_position(0, 7)] = 10
+		level.layers[1].data[player_to_map_position(1, 7)] = 10
 	end
 
 	if player.facing == dirs.south then
-		level.layers[1].data[player_to_map_position(8,1)] = 10
-		level.layers[1].data[player_to_map_position(8,0)] = 10
+		level.layers[1].data[player_to_map_position(8, 1)] = 10
+		level.layers[1].data[player_to_map_position(8, 0)] = 10
 	end
-	
+
 	if player.facing == dirs.west then
-		level.layers[1].data[player_to_map_position(15,7)] = 10
-		level.layers[1].data[player_to_map_position(16,7)] = 10
+		level.layers[1].data[player_to_map_position(15, 7)] = 10
+		level.layers[1].data[player_to_map_position(16, 7)] = 10
 	end
 end
 
@@ -174,12 +181,12 @@ function player.move()
 		end
 		player.y = player.y - 1
 	elseif player.facing == dirs.east then
-		if check_wall(east) or player.x >= level.width-1 then
+		if check_wall(east) or player.x >= level.width - 1 then
 			return
 		end
 		player.x = player.x + 1
 	elseif player.facing == dirs.south then
-		if check_wall(south) or player.y >= level.height-1 then
+		if check_wall(south) or player.y >= level.height - 1 then
 			return
 		end
 		player.y = player.y + 1
@@ -286,7 +293,7 @@ function love.update(dt)
 	else
 		page_lock = false
 	end
-	
+
 	if love.keyboard.isDown("r") then
 		reset_level()
 	end
@@ -294,7 +301,6 @@ function love.update(dt)
 	if love.keyboard.isDown("delete") then
 		nuke_doors()
 	end
-
 
 	key_count = 0
 	for _, v in pairs({ up, down, left, right }) do
