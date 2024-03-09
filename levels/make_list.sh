@@ -1,7 +1,12 @@
 #!/bin/bash
 
-echo return { >list.lua
-for n in $(seq 1 $1); do
-	echo "    \"level$n\"," >>list.lua
+echo "return {" >list.lua
+
+count=1
+
+while [ -f "level$count.lua" ]; do
+	echo "   \"level$count\"," >>list.lua
+	count=$((count+1))
 done
-echo } >>list.lua
+
+echo "}" >>list.lua
