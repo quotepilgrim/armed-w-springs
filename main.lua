@@ -1,26 +1,47 @@
 local level = require("levels.level1")
 local level_names = require("levels.list")
 local current_level = "level1"
-local states = { base = {}, moving = {} }
+local states = {
+	base = {},
+	moving = {},
+	message = {},
+	event_3_1 = {},
+	event_3_1_5 = {},
+}
 local game_state = "base"
 local pos = 0
 local facing = 0
 local solved_levels = {}
 local history = {}
+local messages = {}
+local msg_level3 = {}
+local events = { ["level3"] = { "3_1", "3_2", "3_3", "3_3.5", "3_4" } }
+local event_name = nil
+local current_message = ""
+local portraits = {}
 
-for i, v in ipairs(arg) do
-	if v == "--warp" or v == "-w" then
-		if tonumber(arg[i + 1]) < 1 or tonumber(arg[i + 1]) > #level_names then
-			break
-		end
-		level = require("levels.level" .. arg[i + 1])
-		current_level = "level" .. arg[i + 1]
-		print(arg[i + 1])
-	end
-end
+msg_level3[1] = {
+	{ "antag", "Summers, autumns, winters,\nyour arms are now springs!" },
+	{ "player", "Uh, what?" },
+}
+
+msg_level3[2] = {
+	{ "player", "What the hell was that?" },
+	{ "player", "Also, how am I going to push\nboxes with these stupid spring arms?" },
+}
+
+msg_level3[3] = {
+	{ "player", "Well, here goes nothing!" },
+}
+
+msg_level3[4] = {
+	{ "player", "Dammit!, it went much further\nthan I was expecting." },
+	{ "player", "..." },
+	{ "player", "This is going to make getting\nthe boxes where I want to a huge pain" },
+}
 
 local tiles = {}
-local scale = 3
+local scale = 4
 local spring = false
 local dirs = {
 	["north"] = 0,
@@ -31,7 +52,7 @@ local dirs = {
 local frame_timer = 0
 local move_timer = 0
 local key_count = 0
-local sheet, lock, page_lock
+local sheet, lock, message_text
 local up, down, left, right
 local level_ids = {}
 local last_entrance = { x = 8, y = 12 }
@@ -59,6 +80,7 @@ local walls = {
 	17,
 	18,
 	19,
+	20,
 	21,
 	22,
 	24,
@@ -89,6 +111,22 @@ local box = 26
 local box_on_goal = 27
 
 local player = {}
+local antag = {}
+
+for i, v in ipairs(arg) do
+	if v == "--warp" or v == "-w" then
+		if tonumber(arg[i + 1]) < 1 or tonumber(arg[i + 1]) > #level_names then
+			break
+		end
+		if tonumber(arg[i + 1]) > 3 then
+			events.level3 = {}
+			spring = true
+		end
+		level = require("levels.level" .. arg[i + 1])
+		current_level = "level" .. arg[i + 1]
+		print(arg[i + 1])
+	end
+end
 
 local function coords_to_index(x, y)
 	return x + 1 + y * level.width
@@ -135,6 +173,12 @@ end
 
 local function move_box(pos, direction)
 	local found_box = false
+	local x = math.fmod(pos, level.width)
+	local y = math.floor(pos / level.height)
+
+	if x == 1 or x == level.width then
+		level.layers[1].data[pos] = floor
+	end
 
 	if not spring then
 		update_history()
@@ -173,6 +217,7 @@ local function move_box(pos, direction)
 	elseif level.layers[1].data[new_pos] == goal then
 		level.layers[1].data[new_pos] = box_on_goal
 	end
+
 	return true
 end
 
@@ -203,6 +248,16 @@ local function open_entrance()
 	end
 end
 
+local function nuke_doors()
+	for i, v in ipairs(level.layers[1].data) do
+		for _, d in ipairs(doors) do
+			if v == d then
+				level.layers[1].data[i] = 10
+			end
+		end
+	end
+end
+
 local function change_level(level_name, x, y, open)
 	if level_name then
 		history = {}
@@ -213,6 +268,11 @@ local function change_level(level_name, x, y, open)
 		player.x = x
 		player.y = y
 		current_level = level_name
+
+		if solved_levels[current_level] then
+			nuke_doors()
+		end
+
 		if open then
 			open_entrance()
 		end
@@ -237,16 +297,6 @@ local function reset_level()
 		player.facing = dirs.east
 	end
 	open_entrance()
-end
-
-local function nuke_doors()
-	for i, v in ipairs(level.layers[1].data) do
-		for _, d in ipairs(doors) do
-			if v == d then
-				level.layers[1].data[i] = 10
-			end
-		end
-	end
 end
 
 function player.move()
@@ -303,18 +353,8 @@ function player.move()
 	return "floor"
 end
 
-function states.base.draw()
-	love.graphics.scale(scale, scale)
-	love.graphics.translate(-8, -8)
-	for k, v in pairs(level.layers[1].data) do
-		love.graphics.draw(sheet, tiles[v], math.fmod(k - 1, level.width) * 16, math.floor((k - 1) / level.width) * 16)
-	end
-	love.graphics.draw(
-		player[player.sprite],
-		player.quads[player.frame + 1 + player.facing * 4],
-		player.x * 16,
-		player.y * 16 - 10
-	)
+function antag.draw()
+	love.graphics.draw(antag.image, player.quads[antag.frame + 1 + antag.facing * 4], antag.x * 16, antag.y * 16 - 10)
 end
 
 function states.base.draw()
@@ -379,6 +419,9 @@ function states.base.update(dt)
 		end
 	else
 		player.state = "idle"
+		if event_name == "3_3" or event_name == "3_3.5" then
+			player.state = "moving"
+		end
 	end
 
 	if player.state == "moving" then
@@ -398,10 +441,31 @@ function states.base.update(dt)
 			move_timer = move_timer - 0.3
 			player.moved_to = player.move()
 		end
-		if player.moved_to == "box" then
+		if player.moved_to == "box" or event_name == "3_3.5" then
 			player.moved_to = ""
-			if current_level == "level3" then
-				print("level 3 box push")
+			if current_level == "level3" and #events.level3 > 0 then
+				event_name = table.remove(events.level3, 1)
+				print(events.level3)
+				if event_name == "3_1" then
+					move_timer = 0
+					event_count = 1
+					messages = msg_level3[1]
+				elseif event_name == "3_2" then
+					messages = msg_level3[2]
+				elseif event_name == "3_3" then
+					messages = msg_level3[3]
+				elseif event_name == "3_3.5" then
+					spring = true
+					pos = player.move_attempt
+					game_state = "moving"
+					return
+				elseif event_name == "3_4" then
+					messages = msg_level3[4]
+				end
+				current_message = table.remove(messages, 1)
+				message_text:set(current_message[2])
+				game_state = "message"
+				return
 			end
 			if spring then
 				update_history()
@@ -412,6 +476,7 @@ function states.base.update(dt)
 			if move_box(player.move_attempt, player.facing) then
 				player.moved_to = player.move()
 				if not goal_in_level() then
+					solved_levels[current_level] = true
 					nuke_doors()
 				end
 			end
@@ -428,11 +493,12 @@ states.moving.draw = states.base.draw
 
 function states.moving.update(dt)
 	move_timer = move_timer + dt
-	if move_timer > 0.1 then
-		player.frame = 0
+	frame_timer = frame_timer + dt
 
+	if move_timer > 0.05 then
 		if not move_box(pos, player.facing) then
 			if not goal_in_level() then
+				solved_levels[current_level] = true
 				nuke_doors()
 			end
 			game_state = "base"
@@ -447,7 +513,114 @@ function states.moving.update(dt)
 		elseif player.facing == dirs.west then
 			pos = pos - 1
 		end
-		move_timer = move_timer - 0.1
+		move_timer = move_timer - 0.05
+	end
+
+	if frame_timer > 0.2 then
+		player.frame = 0
+	end
+end
+
+function states.message.draw()
+	states.base.draw()
+	if event_name == "3_1" then
+		return
+	end
+	antag.draw()
+	love.graphics.setColor(0, 0, 255)
+	love.graphics.rectangle("fill", 16, 16, 240, 48)
+
+	love.graphics.setColor(0, 0, 0)
+	for i = 1, 2 do
+		love.graphics.draw(message_text, 65, 21)
+	end
+
+	love.graphics.setColor(255, 255, 255)
+	for i = 1, 2 do
+		love.graphics.draw(message_text, 64, 20)
+	end
+
+	love.graphics.draw(portraits[current_message[1]], 24, 24)
+end
+
+function states.message.update(dt)
+	if event_name == "3_1" then
+		game_state = "event_3_1"
+		return
+	end
+	if love.keyboard.isDown("space") then
+		if not lock then
+			lock = true
+			current_message = table.remove(messages, 1)
+			if not current_message then
+				if event_name == "3_1.5" then
+					antag.facing = dirs.north
+					game_state = "event_3_1_5"
+				else
+					game_state = "base"
+				end
+				return
+			end
+			message_text:set(current_message[2])
+		end
+	else
+		lock = false
+	end
+end
+
+function states.event_3_1.draw()
+	states.base.draw()
+	antag.draw()
+end
+
+function states.event_3_1.update(dt)
+	level.layers[1].data[coords_to_index(8, 0)] = floor
+	level.layers[1].data[coords_to_index(8, 1)] = floor
+	level.layers[1].data[coords_to_index(8, 3)] = goal
+	move_timer = move_timer + dt
+	frame_timer = frame_timer + dt
+	if frame_timer > 0.15 then
+		antag.frame = math.fmod(antag.frame + 1, 4)
+		frame_timer = frame_timer - 0.15
+	end
+	if move_timer > 0.15 then
+		move_timer = move_timer - 0.15
+		antag.y = antag.y + 1
+	end
+	if antag.y == 5 then
+		move_timer = 0
+		frame_timer = 0
+		antag.frame = 0
+		event_name = "3_1.5"
+		game_state = "message"
+		return
+	end
+end
+
+function states.event_3_1_5.draw()
+	states.base.draw()
+	antag.draw()
+end
+
+function states.event_3_1_5.update(dt)
+	move_timer = move_timer + dt
+	frame_timer = frame_timer + dt
+	if move_timer > 0.15 then
+		move_timer = move_timer - 0.15
+		antag.y = antag.y - 1
+	end
+	if move_timer > 0.15 then
+		move_timer = move_timer - 0.15
+		antag.y = antag.y + 1
+	end
+	if antag.y == -2 then
+		level.layers[1].data[coords_to_index(8, 0)] = 33
+		level.layers[1].data[coords_to_index(8, 1)] = 41
+		level.layers[1].data[coords_to_index(8, 3)] = 39
+		move_timer = 0
+		event_name = ""
+		game_state = "base"
+		return
 	end
 end
 
@@ -455,6 +628,12 @@ function love.load()
 	love.window.setMode(256 * scale, 224 * scale)
 	love.graphics.setDefaultFilter("nearest", "nearest")
 	sheet = love.graphics.newImage("graphics/level_tiles.png")
+	msg_font = love.graphics.newFont(10)
+	message_text = love.graphics.newText(msg_font, "")
+	portraits = {
+		["player"] = love.graphics.newImage("graphics/player_portrait.png"),
+		["antag"] = love.graphics.newImage("graphics/antag_portrait.png"),
+	}
 
 	player.quads = {}
 	player.x = 8
@@ -465,6 +644,12 @@ function love.load()
 	player.alt = 1
 	player.sprite = "normal"
 	player.state = "idle"
+
+	antag.x = 8
+	antag.y = -2
+	antag.image = love.graphics.newImage("graphics/antag.png")
+	antag.facing = dirs.south
+	antag.frame = 0
 
 	for i = 1, 8 do
 		for j = 1, 8 do
@@ -490,17 +675,21 @@ end
 function love.keypressed(key, scancode, isrepeat)
 	if key == "escape" then
 		love.event.quit()
-	elseif key == "pageup" then
+	elseif key == "pagedown" then
 		local new_level = level_names[level_ids[current_level] + 1]
 		if new_level then
 			player.facing = dirs.north
 			change_level(new_level, 8, 12)
+		else
+			change_level(level_names[1], 8, 12)
 		end
-	elseif key == "pagedown" then
+	elseif key == "pageup" then
 		local new_level = level_names[level_ids[current_level] - 1]
 		if new_level then
 			player.facing = dirs.north
 			change_level(new_level, 8, 12)
+		else
+			change_level(level_names[#level_names], 8, 12)
 		end
 	elseif key == "delete" then
 		nuke_doors()
@@ -516,6 +705,22 @@ function love.keypressed(key, scancode, isrepeat)
 		player.facing = data[2]
 		player.x = data[3]
 		player.y = data[4]
+	elseif key == "=" then
+		local _, _, flags = love.window.getMode()
+		local width, height = love.window.getDesktopDimensions(flags.display)
+		local new_scale = scale + 1
+		if 256 * new_scale > width or 224 * new_scale > height then
+			return
+		end
+		scale = new_scale
+		love.window.setMode(256 * scale, 224 * scale)
+	elseif key == "-" then
+		local new_scale = scale - 1
+		if new_scale < 2 then
+			return
+		end
+		scale = new_scale
+		love.window.setMode(256 * scale, 224 * scale)
 	elseif key == "r" then
 		reset_level()
 	end
