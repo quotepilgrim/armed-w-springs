@@ -37,7 +37,7 @@ msg_level3[3] = {
 msg_level3[4] = {
 	{ "player", "Dammit!, it went much further\nthan I was expecting." },
 	{ "player", "..." },
-	{ "player", "This is going to make getting\nthe boxes where I want to a huge pain" },
+	{ "player", "I can already tell this is going to\nmake getting the boxes where\nI want to a huge pain." },
 }
 
 local tiles = {}
@@ -124,7 +124,6 @@ for i, v in ipairs(arg) do
 		end
 		level = require("levels.level" .. arg[i + 1])
 		current_level = "level" .. arg[i + 1]
-		print(arg[i + 1])
 	end
 end
 
@@ -176,7 +175,7 @@ local function move_box(pos, direction)
 	local x = math.fmod(pos, level.width)
 	local y = math.floor(pos / level.height)
 
-	if x == 1 or x == level.width then
+	if x <= 1 or x >= level.width then
 		level.layers[1].data[pos] = floor
 	end
 
@@ -445,7 +444,6 @@ function states.base.update(dt)
 			player.moved_to = ""
 			if current_level == "level3" and #events.level3 > 0 then
 				event_name = table.remove(events.level3, 1)
-				print(events.level3)
 				if event_name == "3_1" then
 					move_timer = 0
 					event_count = 1
@@ -527,15 +525,14 @@ function states.message.draw()
 		return
 	end
 	antag.draw()
-	love.graphics.setColor(0, 0, 255)
-	love.graphics.rectangle("fill", 16, 16, 240, 48)
+	love.graphics.draw(message_box, 16, 16)
 
 	love.graphics.setColor(0, 0, 0)
 	for i = 1, 2 do
 		love.graphics.draw(message_text, 65, 21)
 	end
 
-	love.graphics.setColor(255, 255, 255)
+	love.graphics.setColor(1, 1, 1)
 	for i = 1, 2 do
 		love.graphics.draw(message_text, 64, 20)
 	end
@@ -583,14 +580,15 @@ function states.event_3_1.update(dt)
 		antag.frame = math.fmod(antag.frame + 1, 4)
 		frame_timer = frame_timer - 0.15
 	end
-	if move_timer > 0.15 then
-		move_timer = move_timer - 0.15
+	if move_timer > 0.3 then
+		move_timer = move_timer - 0.3
 		antag.y = antag.y + 1
 	end
 	if antag.y == 5 then
 		move_timer = 0
 		frame_timer = 0
 		antag.frame = 0
+		player.sprite = "spring"
 		event_name = "3_1.5"
 		game_state = "message"
 		return
@@ -605,13 +603,13 @@ end
 function states.event_3_1_5.update(dt)
 	move_timer = move_timer + dt
 	frame_timer = frame_timer + dt
-	if move_timer > 0.15 then
-		move_timer = move_timer - 0.15
-		antag.y = antag.y - 1
+	if frame_timer > 0.15 then
+		antag.frame = math.fmod(antag.frame + 1, 4)
+		frame_timer = frame_timer - 0.15
 	end
-	if move_timer > 0.15 then
-		move_timer = move_timer - 0.15
-		antag.y = antag.y + 1
+	if move_timer > 0.3 then
+		move_timer = move_timer - 0.3
+		antag.y = antag.y - 1
 	end
 	if antag.y == -2 then
 		level.layers[1].data[coords_to_index(8, 0)] = 33
@@ -634,16 +632,22 @@ function love.load()
 		["player"] = love.graphics.newImage("graphics/player_portrait.png"),
 		["antag"] = love.graphics.newImage("graphics/antag_portrait.png"),
 	}
+	message_box = love.graphics.newImage("graphics/message_box.png")
 
 	player.quads = {}
 	player.x = 8
 	player.y = 12
 	player.normal = love.graphics.newImage("graphics/char_normal.png")
+	player.spring = love.graphics.newImage("graphics/char_spring.png")
 	player.facing = dirs.north
 	player.frame = 0
 	player.alt = 1
 	player.sprite = "normal"
 	player.state = "idle"
+
+	if spring then
+		player.sprite = "spring"
+	end
 
 	antag.x = 8
 	antag.y = -2
@@ -694,6 +698,11 @@ function love.keypressed(key, scancode, isrepeat)
 	elseif key == "delete" then
 		nuke_doors()
 	elseif key == "insert" then
+		if spring then
+			player.sprite = "normal"
+		else
+			player.sprite = "spring"
+		end
 		spring = not spring
 	elseif key == "z" or key == "backspace" then
 		local data = table.remove(history)
