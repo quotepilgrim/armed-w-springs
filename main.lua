@@ -43,6 +43,7 @@ msg_level3[4] = {
 local tiles = {}
 local scale = 4
 local spring = false
+local tile_flip = false
 local dirs = {
 	["north"] = 0,
 	["east"] = 1,
@@ -177,12 +178,21 @@ end
 
 local function check_box(pos)
 	for i, v in pairs(boxes) do
-	if level.layers[1].data[pos] == v then
-		print(v)
-		return true
+		if level.layers[1].data[pos] == v then
+			return true
+		end
 	end
-end
 	return false
+end
+
+local function flip_tiles()
+	for i, v in pairs(level.layers[1].data) do
+		if v == tile then
+			level.layers[1].data[i] = block
+		elseif v == block then
+			level.layers[1].data[i] = tile
+		end
+	end
 end
 
 local function move_box(pos, direction)
@@ -227,7 +237,11 @@ local function move_box(pos, direction)
 	elseif level.layers[1].data[pos] == box_on_tile then
 		level.layers[1].data[pos] = tile
 	elseif level.layers[1].data[pos] == box_on_plate then
+		if states.moving.has_moved and level.layers[1].data[new_pos] == tile then
+			return false
+		end
 		level.layers[1].data[pos] = plate
+		tile_flip = true
 	end
 
 	if level.layers[1].data[new_pos] == floor then
@@ -238,6 +252,7 @@ local function move_box(pos, direction)
 		level.layers[1].data[new_pos] = box_on_tile
 	elseif level.layers[1].data[new_pos] == plate then
 		level.layers[1].data[new_pos] = box_on_plate
+		flip_tiles()
 	end
 
 	return true
@@ -488,17 +503,25 @@ function states.base.update(dt)
 				game_state = "message"
 				return
 			end
+
 			if spring then
 				update_history()
 				pos = player.move_attempt
 				game_state = "moving"
 				return
 			end
+
 			if move_box(player.move_attempt, player.facing) then
 				player.moved_to = player.move()
+
 				if not goal_in_level() then
 					solved_levels[current_level] = true
 					nuke_doors()
+				end
+
+				if tile_flip then
+					tile_flip = false
+					flip_tiles()
 				end
 			end
 		end
@@ -522,7 +545,15 @@ function states.moving.update(dt)
 				solved_levels[current_level] = true
 				nuke_doors()
 			end
+			states.moving.has_moved = false
 			game_state = "base"
+		else
+			states.moving.has_moved = true
+		end
+
+		if tile_flip then
+			tile_flip = false
+			flip_tiles()
 		end
 
 		if player.facing == dirs.north then
@@ -596,7 +627,7 @@ end
 function states.event_3_1.update(dt)
 	level.layers[1].data[coords_to_index(8, 0)] = floor
 	level.layers[1].data[coords_to_index(8, 1)] = floor
-	level.layers[1].data[coords_to_index(8, 3)] = goal
+	level.layers[1].data[coords_to_index(8, 3)] = tile
 	move_timer = move_timer + dt
 	frame_timer = frame_timer + dt
 	if frame_timer > 0.15 then
