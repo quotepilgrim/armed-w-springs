@@ -1,6 +1,16 @@
 {
     "automappingRulesFile": "rules.txt",
     "commands": [
+        {
+            "arguments": "%mapfile",
+            "command": "/home/pilgrim/Documents/jam0/run.sh",
+            "enabled": true,
+            "name": "Test",
+            "saveBeforeExecute": true,
+            "shortcut": null,
+            "showOutput": true,
+            "workingDirectory": "/home/pilgrim/Documents/jam0"
+        }
     ],
     "compatibilityVersion": 1100,
     "extensionsPath": "extensions",

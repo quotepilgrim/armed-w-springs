@@ -61,6 +61,15 @@ for i, v in ipairs(level_names) do
 	level_ids[v] = i
 end
 
+local floor = 10
+local goal = 25
+local box = 26
+local box_on_goal = 27
+local tile = 40
+local plate = 45
+local box_on_plate = 46
+local box_on_tile = 47
+
 local walls = {
 	1,
 	2,
@@ -94,6 +103,13 @@ local walls = {
 	39,
 }
 
+local boxes = {
+	box,
+	box_on_goal,
+	box_on_plate,
+	box_on_tile,
+}
+
 local doors = {
 	33,
 	34,
@@ -104,11 +120,6 @@ local doors = {
 	43,
 	44,
 }
-
-local floor = 10
-local goal = 25
-local box = 26
-local box_on_goal = 27
 
 local player = {}
 local antag = {}
@@ -164,9 +175,12 @@ local function check_wall(pos)
 end
 
 local function check_box(pos)
-	if level.layers[1].data[pos] == box or level.layers[1].data[pos] == box_on_goal then
+	for i, v in pairs(boxes) do
+	if level.layers[1].data[pos] == v then
+		print(v)
 		return true
 	end
+end
 	return false
 end
 
@@ -183,7 +197,7 @@ local function move_box(pos, direction)
 		update_history()
 	end
 
-	for _, v in pairs({ box, box_on_goal }) do
+	for _, v in pairs(boxes) do
 		if level.layers[1].data[pos] == v then
 			found_box = true
 		end
@@ -209,12 +223,20 @@ local function move_box(pos, direction)
 		level.layers[1].data[pos] = floor
 	elseif level.layers[1].data[pos] == box_on_goal then
 		level.layers[1].data[pos] = goal
+	elseif level.layers[1].data[pos] == box_on_tile then
+		level.layers[1].data[pos] = tile
+	elseif level.layers[1].data[pos] == box_on_plate then
+		level.layers[1].data[pos] = plate
 	end
 
 	if level.layers[1].data[new_pos] == floor then
 		level.layers[1].data[new_pos] = box
 	elseif level.layers[1].data[new_pos] == goal then
 		level.layers[1].data[new_pos] = box_on_goal
+	elseif level.layers[1].data[new_pos] == box_on_tile then
+		level.layers[1].data[new_pos] = tile
+	elseif level.layers[1].data[new_pos] == box_on_plate then
+		level.layers[1].data[new_pos] = plate
 	end
 
 	return true

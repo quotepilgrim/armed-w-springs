@@ -40,8 +40,11 @@
  <tile id="36" type="wall"/>
  <tile id="37" type="wall"/>
  <tile id="38" type="wall"/>
+ <tile id="39" type="floor"/>
  <tile id="40" type="door"/>
  <tile id="41" type="door"/>
  <tile id="42" type="door"/>
  <tile id="43" type="door"/>
+ <tile id="45" type="box"/>
+ <tile id="46" type="box"/>
 </tileset>

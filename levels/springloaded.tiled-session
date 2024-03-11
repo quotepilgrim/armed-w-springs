@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "level9.tmx",
+    "activeFile": "level6.tmx",
     "automapping.whileDrawing": true,
     "expandedProjectPaths": [
         "."
@@ -18,15 +18,15 @@
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 142,
-                "y": -128.33333333333337
+                "x": 128,
+                "y": -128.33333333333331
             }
         },
         "level1.tmx": {
             "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 140,
+                "x": 139.66666666666666,
                 "y": 116.16666666666669
             }
         },
@@ -98,7 +98,7 @@
             "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 136.16666666666663,
+                "x": 136,
                 "y": 120.16666666666664
             }
         },
@@ -106,7 +106,7 @@
             "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 136.16666666666663,
+                "x": 136,
                 "y": 120.16666666666664
             }
         },
@@ -114,8 +114,8 @@
             "scale": 3.338970588235294,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 136.11979740145347,
-                "y": 120.2466417088747
+                "x": 135.37106364236953,
+                "y": 119.94714820524115
             }
         },
         "level6.tmx": {
@@ -130,8 +130,8 @@
             "scale": 3.338970588235294,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 136.11979740145347,
-                "y": 120.2466417088747
+                "x": 135.37106364236953,
+                "y": 119.94714820524115
             }
         },
         "level8.tmx": {
@@ -169,9 +169,11 @@
             }
         }
     },
+    "last.executablePath": "/home/pilgrim/Documents/jam0/run.sh",
     "last.exportedFilePath": "/home/pilgrim/Documents/jam0/levels",
     "last.externalTilesetPath": "/home/pilgrim/Documents/jam0",
     "last.imagePath": "/home/pilgrim/Documents/jam0/graphics",
+    "last.workingDirectory": "/home/pilgrim/Documents/jam0",
     "map.fixedSize": true,
     "map.height": 15,
     "map.lastUsedExportFilter": "Lua files (*.lua)",
@@ -180,30 +182,28 @@
     "map.tileWidth": 16,
     "map.width": 17,
     "openFiles": [
-        "rules.tmx",
-        "level_tiles.tsx",
         "layout.tmx",
-        "level4.tmx",
-        "level5.tmx",
         "level7.tmx",
-        "level3.tmx",
-        "level9.tmx"
+        "level6.tmx",
+        "level5.tmx",
+        "level4.tmx",
+        "level3.tmx"
     ],
     "project": "springloaded.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "level9.tmx",
-        "level3.tmx",
-        "level7.tmx",
-        "level5.tmx",
-        "level4.tmx",
-        "rules.tmx",
-        "level_tiles.tsx",
         "layout.tmx",
-        "level11.tmx",
-        "level12.tmx",
-        "level13.tmx",
-        "level14.tmx"
+        "level7.tmx",
+        "level3.tmx",
+        "level4.tmx",
+        "level5.tmx",
+        "level6.tmx",
+        "level10.tmx",
+        "level9.tmx",
+        "level8.tmx",
+        "level16.tmx",
+        "level1.tmx",
+        "level_tiles.tsx"
     ],
     "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
     "tileset.lastUsedFormat": "tsx",
