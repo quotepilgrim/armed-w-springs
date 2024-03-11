@@ -32,7 +32,7 @@ return {
       width = 17,
       height = 15,
       id = 1,
-      name = "Tile Layer 1",
+      name = "base",
       class = "",
       visible = true,
       opacity = 1,

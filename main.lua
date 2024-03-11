@@ -14,12 +14,13 @@ local facing = 0
 local solved_levels = {}
 local history = {}
 local messages = {}
-local msg_level3 = {}
+local sounds = {}
 local events = { ["level3"] = { "3_1", "3_2", "3_3", "3_3.5", "3_4" } }
 local event_name = nil
 local current_message = ""
 local portraits = {}
 
+local msg_level3 = {}
 msg_level3[1] = {
 	{ "antag", "Summers, autumns, winters,\nyour arms are now springs!" },
 	{ "player", "Uh, what?" },
@@ -187,10 +188,10 @@ end
 
 local function flip_tiles()
 	for i, v in pairs(level.layers[1].data) do
-		if v == tile then
-			level.layers[1].data[i] = block
-		elseif v == block then
+		if v == block then
 			level.layers[1].data[i] = tile
+		elseif v == tile and not (coords_to_index(player.x, player.y) == i) then
+			level.layers[1].data[i] = block
 		end
 	end
 end
@@ -252,6 +253,7 @@ local function move_box(pos, direction)
 		level.layers[1].data[new_pos] = box_on_tile
 	elseif level.layers[1].data[new_pos] == plate then
 		level.layers[1].data[new_pos] = box_on_plate
+		states.moving.stop_sound = sounds.click
 		flip_tiles()
 	end
 
@@ -293,6 +295,7 @@ local function nuke_doors()
 			end
 		end
 	end
+	sounds.door:play()
 end
 
 local function change_level(level_name, x, y, open)
@@ -507,6 +510,7 @@ function states.base.update(dt)
 			if spring then
 				update_history()
 				pos = player.move_attempt
+				states.moving.stop_sound = sounds.hit
 				game_state = "moving"
 				return
 			end
@@ -544,6 +548,11 @@ function states.moving.update(dt)
 			if not goal_in_level() then
 				solved_levels[current_level] = true
 				nuke_doors()
+			end
+			if states.moving.has_moved then
+				if not sounds.door:isPlaying() then
+					states.moving.stop_sound:play()
+				end
 			end
 			states.moving.has_moved = false
 			game_state = "base"
@@ -687,6 +696,11 @@ function love.load()
 		["antag"] = love.graphics.newImage("graphics/antag_portrait.png"),
 	}
 	message_box = love.graphics.newImage("graphics/message_box.png")
+	sounds = {
+		["hit"] = love.audio.newSource("sounds/hit.wav", "static"),
+		["click"] = love.audio.newSource("sounds/click.wav", "static"),
+		["door"] = love.audio.newSource("sounds/door.wav", "static"),
+	}
 
 	player.quads = {}
 	player.x = 8
