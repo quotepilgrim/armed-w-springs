@@ -65,6 +65,7 @@ local floor = 10
 local goal = 25
 local box = 26
 local box_on_goal = 27
+local block = 39
 local tile = 40
 local plate = 45
 local box_on_plate = 46
