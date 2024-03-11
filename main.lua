@@ -233,10 +233,10 @@ local function move_box(pos, direction)
 		level.layers[1].data[new_pos] = box
 	elseif level.layers[1].data[new_pos] == goal then
 		level.layers[1].data[new_pos] = box_on_goal
-	elseif level.layers[1].data[new_pos] == box_on_tile then
-		level.layers[1].data[new_pos] = tile
-	elseif level.layers[1].data[new_pos] == box_on_plate then
-		level.layers[1].data[new_pos] = plate
+	elseif level.layers[1].data[new_pos] == tile then
+		level.layers[1].data[new_pos] = box_on_tile
+	elseif level.layers[1].data[new_pos] == plate then
+		level.layers[1].data[new_pos] = box_on_plate
 	end
 
 	return true
