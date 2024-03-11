@@ -104,6 +104,7 @@ local walls = {
 	37,
 	38,
 	39,
+	48,
 }
 
 local boxes = {
@@ -247,10 +248,13 @@ local function move_box(pos, direction)
 
 	if level.layers[1].data[new_pos] == floor then
 		level.layers[1].data[new_pos] = box
+		states.moving.stop_sound = sounds.hit
 	elseif level.layers[1].data[new_pos] == goal then
 		level.layers[1].data[new_pos] = box_on_goal
+		states.moving.stop_sound = sounds.hit
 	elseif level.layers[1].data[new_pos] == tile then
 		level.layers[1].data[new_pos] = box_on_tile
+		states.moving.stop_sound = sounds.hit
 	elseif level.layers[1].data[new_pos] == plate then
 		level.layers[1].data[new_pos] = box_on_plate
 		states.moving.stop_sound = sounds.click
@@ -605,6 +609,7 @@ end
 
 function states.message.update(dt)
 	if event_name == "3_1" then
+		sounds.door:play()
 		game_state = "event_3_1"
 		return
 	end
@@ -678,6 +683,7 @@ function states.event_3_1_5.update(dt)
 		level.layers[1].data[coords_to_index(8, 0)] = 33
 		level.layers[1].data[coords_to_index(8, 1)] = 41
 		level.layers[1].data[coords_to_index(8, 3)] = 39
+		sounds.door:play()
 		move_timer = 0
 		event_name = ""
 		game_state = "base"
@@ -701,6 +707,7 @@ function love.load()
 		["click"] = love.audio.newSource("sounds/click.wav", "static"),
 		["door"] = love.audio.newSource("sounds/door.wav", "static"),
 	}
+	states.moving.stop_sound = sounds.hit
 
 	player.quads = {}
 	player.x = 8
