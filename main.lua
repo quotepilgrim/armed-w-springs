@@ -95,6 +95,7 @@ local walls = {
 	20,
 	21,
 	22,
+	23,
 	24,
 	28,
 	29,
@@ -812,11 +813,17 @@ function love.keypressed(key, scancode, isrepeat)
 		end
 		scale = new_scale
 		love.window.setMode(256 * scale, 224 * scale)
-	elseif key == "r" then
+	elseif key == "r" or key == "home" then
 		if not (game_state == "base") then
 			return
 		end
+
 		reset_level()
+
+		if love.keyboard.isDown("lshift", "rshift") then
+			solved_levels[current_level] = nil
+		end
+
 		if solved_levels[current_level] then
 			nuke_doors()
 		end
