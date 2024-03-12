@@ -271,6 +271,9 @@ end
 
 local function open_entrance()
 	if player.facing == dirs.north then
+		if not (level.layers[1].data[coords_to_index(8, 13)] == 36) then
+			return
+		end
 		level.layers[1].data[coords_to_index(8, 13)] = 10
 		level.layers[1].data[coords_to_index(8, 14)] = 10
 	end
@@ -299,7 +302,6 @@ local function nuke_doors()
 			end
 		end
 	end
-	sounds.door:play()
 end
 
 local function change_level(level_name, x, y, open)
@@ -522,9 +524,10 @@ function states.base.update(dt)
 			if move_box(player.move_attempt, player.facing) then
 				player.moved_to = player.move()
 
-				if not goal_in_level() then
+				if not goal_in_level() and not solved_levels[current_level] then
 					solved_levels[current_level] = true
 					nuke_doors()
+					sounds.door:play()
 				end
 
 				if tile_flip then
@@ -549,9 +552,10 @@ function states.moving.update(dt)
 
 	if move_timer > 0.05 then
 		if not move_box(pos, player.facing) then
-			if not goal_in_level() then
+			if not goal_in_level() and not solved_levels[current_level] then
 				solved_levels[current_level] = true
 				nuke_doors()
+				sounds.door:play()
 			end
 			if states.moving.has_moved then
 				if not sounds.door:isPlaying() then
@@ -780,6 +784,9 @@ function love.keypressed(key, scancode, isrepeat)
 		end
 		spring = not spring
 	elseif key == "z" or key == "backspace" then
+		if not (game_state == "base") then
+			return
+		end
 		local data = table.remove(history)
 		if not data then
 			reset_level()
@@ -806,6 +813,12 @@ function love.keypressed(key, scancode, isrepeat)
 		scale = new_scale
 		love.window.setMode(256 * scale, 224 * scale)
 	elseif key == "r" then
+		if not (game_state == "base") then
+			return
+		end
 		reset_level()
+		if solved_levels[current_level] then
+			nuke_doors()
+		end
 	end
 end
