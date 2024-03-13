@@ -552,6 +552,10 @@ function states.base.update(dt)
 			if move_box(player.move_attempt, player.facing) then
 				player.moved_to = player.move()
 
+				if not sounds.door:isPlaying() then
+					sounds.push:play()
+				end
+
 				if not goal_in_level() and not solved_levels[current_level] then
 					clear_level()
 				end
@@ -717,7 +721,7 @@ end
 
 function states.title.draw()
 	love.graphics.scale(scale)
-	love.graphics.draw(title, 0, 8)
+	love.graphics.draw(title, 0, 0)
 end
 
 function states.title.update(dt)
@@ -796,6 +800,7 @@ function love.load()
 		["hit"] = love.audio.newSource("sounds/hit.wav", "static"),
 		["click"] = love.audio.newSource("sounds/click.wav", "static"),
 		["door"] = love.audio.newSource("sounds/door.wav", "static"),
+		["push"] = love.audio.newSource("sounds/push.wav", "static"),
 	}
 	states.moving.stop_sound = sounds.hit
 	solved_levels.count = 0
