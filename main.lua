@@ -2,13 +2,16 @@ local level = require("levels.level1")
 local level_names = require("levels.list")
 local current_level = "level1"
 local states = {
+	title = {},
+	starting = {},
 	base = {},
 	moving = {},
 	message = {},
+	["end"] = {},
 	event_3_1 = {},
 	event_3_1_5 = {},
 }
-local game_state = "base"
+local game_state = "title"
 local pos = 0
 local facing = 0
 local solved_levels = {}
@@ -19,6 +22,8 @@ local events = { ["level3"] = { "3_1", "3_2", "3_3", "3_3.5", "3_4" } }
 local event_name = nil
 local current_message = ""
 local portraits = {}
+local starting = true
+local key_pressed = false
 
 local msg_level3 = {}
 msg_level3[1] = {
@@ -41,6 +46,11 @@ msg_level3[4] = {
 	{ "player", "I can already tell this is going to\nmake getting the boxes where\nI want to a huge pain." },
 }
 
+msg_end = {
+	{ "You have solved all of the\ncurrently available levels!" },
+	{ "Thank you for playing!" },
+}
+
 local tiles = {}
 local scale = 4
 local spring = false
@@ -51,10 +61,11 @@ local dirs = {
 	["south"] = 2,
 	["west"] = 3,
 }
+local wait = 0
 local frame_timer = 0
 local move_timer = 0
 local key_count = 0
-local sheet, lock, message_text
+local sheet, lock, message_text, title
 local up, down, left, right
 local level_ids = {}
 local last_entrance = { x = 8, y = 12 }
@@ -296,6 +307,11 @@ local function open_entrance()
 end
 
 local function nuke_doors()
+	if current_level == "level16" and solved_levels.count == #level_names then
+		level.layers[1].data[coords_to_index(8, 0)] = 49
+		level.layers[1].data[coords_to_index(8, 1)] = 57
+	end
+
 	for i, v in ipairs(level.layers[1].data) do
 		for _, d in ipairs(doors) do
 			if v == d then
@@ -346,6 +362,13 @@ local function reset_level()
 	open_entrance()
 end
 
+function clear_level()
+	solved_levels[current_level] = true
+	solved_levels.count = solved_levels.count + 1
+	nuke_doors()
+	sounds.door:play()
+end
+
 function player.move()
 	local north = coords_to_index(player.x, player.y - 1)
 	local east = coords_to_index(player.x + 1, player.y)
@@ -388,6 +411,9 @@ function player.move()
 	end
 
 	if player.x == 8 and player.y == 1 then
+		if current_level == "level16" then
+			game_state = "end"
+		end
 		change_level(level.properties.north, 8, 12, true)
 	elseif player.x == 15 and player.y == 7 then
 		change_level(level.properties.east, 2, 7, true)
@@ -526,9 +552,7 @@ function states.base.update(dt)
 				player.moved_to = player.move()
 
 				if not goal_in_level() and not solved_levels[current_level] then
-					solved_levels[current_level] = true
-					nuke_doors()
-					sounds.door:play()
+					clear_level()
 				end
 
 				if tile_flip then
@@ -554,9 +578,7 @@ function states.moving.update(dt)
 	if move_timer > 0.05 then
 		if not move_box(pos, player.facing) then
 			if not goal_in_level() and not solved_levels[current_level] then
-				solved_levels[current_level] = true
-				nuke_doors()
-				sounds.door:play()
+				clear_level()
 			end
 			if states.moving.has_moved then
 				if not sounds.door:isPlaying() then
@@ -600,14 +622,10 @@ function states.message.draw()
 	love.graphics.draw(message_box, 16, 16)
 
 	love.graphics.setColor(0, 0, 0)
-	for i = 1, 2 do
-		love.graphics.draw(message_text, 65, 21)
-	end
+	love.graphics.draw(message_text, 65, 21)
 
 	love.graphics.setColor(1, 1, 1)
-	for i = 1, 2 do
-		love.graphics.draw(message_text, 64, 20)
-	end
+	love.graphics.draw(message_text, 64, 20)
 
 	love.graphics.draw(portraits[current_message[1]], 24, 24)
 end
@@ -696,23 +714,90 @@ function states.event_3_1_5.update(dt)
 	end
 end
 
+function states.title.draw()
+	love.graphics.scale(scale)
+	love.graphics.draw(title, 0, 8)
+end
+
+function states.title.update(dt)
+	wait = wait - dt
+	if wait > 0 then
+		return
+	else
+		wait = 0
+	end
+	if key_pressed then
+		wait = 0.3
+		game_state = "starting"
+	end
+end
+
+states.starting.draw = states.base.draw
+
+function states.starting.update(dt)
+	wait = wait - dt
+	if wait > 0 then
+		return
+	else
+		wait = 0
+	end
+	game_state = "base"
+end
+
+states["end"].draw = function()
+	love.graphics.scale(scale)
+	love.graphics.translate(-8, -8)
+	love.graphics.draw(message_box, 16, 16)
+	love.graphics.setColor(0, 0, 0)
+	love.graphics.draw(message_text, 25, 21)
+	love.graphics.setColor(1, 1, 1)
+	love.graphics.draw(message_text, 24, 20)
+end
+
+states["end"].update = function(dt)
+	if starting then
+		starting = false
+		lock = false
+		messages = copy_table(msg_end)
+		states["end"].msg_count = 1
+		message_text:set(msg_end[states["end"].msg_count])
+	end
+	if love.keyboard.isDown("space") then
+		if not lock then
+			lock = true
+			states["end"].msg_count = states["end"].msg_count + 1
+			if not msg_end[states["end"].msg_count] then
+				wait = 0.5
+				change_level(level_names[1], 8, 12)
+				game_state = "title"
+				return
+			end
+			message_text:set(msg_end[states["end"].msg_count])
+		end
+	else
+		lock = false
+	end
+end
+
 function love.load()
 	love.window.setMode(256 * scale, 224 * scale)
 	love.graphics.setDefaultFilter("nearest", "nearest")
 	sheet = love.graphics.newImage("graphics/level_tiles.png")
-	msg_font = love.graphics.newFont(10)
+	msg_font = love.graphics.newFont("graphics/PixeloidSans.ttf", 9, "mono")
 	message_text = love.graphics.newText(msg_font, "")
 	portraits = {
 		["player"] = love.graphics.newImage("graphics/player_portrait.png"),
 		["antag"] = love.graphics.newImage("graphics/antag_portrait.png"),
 	}
 	message_box = love.graphics.newImage("graphics/message_box.png")
+	title = love.graphics.newImage("graphics/title.png")
 	sounds = {
 		["hit"] = love.audio.newSource("sounds/hit.wav", "static"),
 		["click"] = love.audio.newSource("sounds/click.wav", "static"),
 		["door"] = love.audio.newSource("sounds/door.wav", "static"),
 	}
 	states.moving.stop_sound = sounds.hit
+	solved_levels.count = 0
 
 	player.quads = {}
 	player.x = 8
@@ -757,6 +842,7 @@ function love.update(dt)
 end
 
 function love.keypressed(key, scancode, isrepeat)
+	key_pressed = true
 	if key == "escape" then
 		love.event.quit()
 	elseif key == "pagedown" then
@@ -827,5 +913,11 @@ function love.keypressed(key, scancode, isrepeat)
 		if solved_levels[current_level] then
 			nuke_doors()
 		end
+	elseif key == "f1" then
+		print(current_level)
 	end
+end
+
+function love.keyreleased(key, scancode, isrepeat)
+	key_pressed = false
 end
