@@ -151,6 +151,7 @@ for i, v in ipairs(arg) do
 		end
 		level = require("levels.level" .. arg[i + 1])
 		current_level = "level" .. arg[i + 1]
+		game_state = "base"
 	end
 end
 
