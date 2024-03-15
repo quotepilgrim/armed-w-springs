@@ -9,8 +9,8 @@ return {
   height = 15,
   tilewidth = 16,
   tileheight = 16,
-  nextlayerid = 5,
-  nextobjectid = 1,
+  nextlayerid = 7,
+  nextobjectid = 7,
   properties = {
     ["east"] = "level6",
     ["north"] = "level5",
