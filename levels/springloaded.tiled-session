@@ -1,0 +1,234 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "level4.tmx",
+    "automapping.whileDrawing": true,
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        ":/automap-tiles.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 3,
+            "scaleInEditor": 5.5
+        },
+        "layout.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 216.5,
+                "y": -141.5
+            }
+        },
+        "level1.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 130.5,
+                "y": 144.16666666666669
+            }
+        },
+        "level10.tmx": {
+            "scale": 3.338970588235294,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 116.95221316890556,
+                "y": 119.94714820524115
+            }
+        },
+        "level11.tmx": {
+            "scale": 4,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 137.125,
+                "y": 123.125
+            }
+        },
+        "level12.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 156.5,
+                "y": 119.16666666666669
+            }
+        },
+        "level13.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 143.16666666666663,
+                "y": 123.16666666666669
+            }
+        },
+        "level14.tmx": {
+            "scale": 3.338970588235294,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 134.92182338691921,
+                "y": 119.94714820524115
+            }
+        },
+        "level15.tmx": {
+            "scale": 3.338970588235294,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 136.2695441532702,
+                "y": 120.2466417088747
+            }
+        },
+        "level16.tmx": {
+            "scale": 3.338970588235294,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 136.2695441532702,
+                "y": 119.94714820524115
+            }
+        },
+        "level17.tmx": {
+            "scale": 3.419301470588235,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 136.13891726251276,
+                "y": 120.05376055050803
+            }
+        },
+        "level2.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 125.5,
+                "y": 126.49999999999999
+            }
+        },
+        "level3.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 135.16666666666663,
+                "y": 119.16666666666669
+            }
+        },
+        "level4.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 134.5,
+                "y": 119.16666666666669
+            }
+        },
+        "level5.tmx": {
+            "scale": 3.338970588235294,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 136.1197974014534,
+                "y": 119.94714820524115
+            }
+        },
+        "level6.tmx": {
+            "scale": 3.338970588235294,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 135.5208103941863,
+                "y": 119.94714820524115
+            }
+        },
+        "level7.tmx": {
+            "scale": 3.338970588235294,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 136.1197974014534,
+                "y": 119.94714820524115
+            }
+        },
+        "level8.tmx": {
+            "scale": 3.338970588235294,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 135.5208103941863,
+                "y": 119.94714820524115
+            }
+        },
+        "level9.tmx": {
+            "scale": 3.338970588235294,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 136.1197974014534,
+                "y": 119.94714820524115
+            }
+        },
+        "level_tiles.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 3,
+            "scaleInEditor": 5.5
+        },
+        "num_tiles.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 3,
+            "scaleInEditor": 1
+        },
+        "rules.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": -1,
+                "y": -0.5
+            }
+        },
+        "scrap.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 248.33333333333337,
+                "y": 230.99999999999997
+            }
+        }
+    },
+    "last.executablePath": "/home/pilgrim/Documents/jam0/run.sh",
+    "last.exportedFilePath": "/home/pilgrim/Documents/jam0/levels",
+    "last.externalTilesetPath": "/home/pilgrim/Documents/jam0",
+    "last.imagePath": "/home/pilgrim/Documents/jam0/graphics",
+    "last.workingDirectory": "/home/pilgrim/Documents/jam0",
+    "last.worldFilePath": "/home/pilgrim/Documents/jam0/levels",
+    "loadedWorlds": [
+        "/home/pilgrim/Documents/jam0/levels/world1.world"
+    ],
+    "map.fixedSize": true,
+    "map.height": 15,
+    "map.lastUsedExportFilter": "Lua files (*.lua)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 17,
+    "mapScene.enableWorlds": true,
+    "openFiles": [
+        "level16.tmx",
+        "level15.tmx",
+        "level4.tmx"
+    ],
+    "project": "springloaded.tiled-project",
+    "property.type": "string",
+    "recentFiles": [
+        "level16.tmx",
+        "level15.tmx",
+        "level4.tmx",
+        "level9.tmx",
+        "level8.tmx",
+        "level7.tmx",
+        "level6.tmx",
+        "level5.tmx",
+        "level3.tmx",
+        "level2.tmx",
+        "level14.tmx",
+        "level13.tmx"
+    ],
+    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    },
+    "tileset.transparentColor": "#000000",
+    "tileset.useTransparentColor": true
+}
