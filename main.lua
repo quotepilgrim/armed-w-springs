@@ -140,18 +140,23 @@ local doors = {
 local player = {}
 local antag = {}
 
+local warp = false
+
 for i, v in ipairs(arg) do
 	if v == "--warp" or v == "-w" then
 		if tonumber(arg[i + 1]) < 1 or tonumber(arg[i + 1]) > #level_names then
 			break
 		end
+
 		if tonumber(arg[i + 1]) > 3 then
 			events.level3 = {}
 			spring = true
 		end
+
 		level = require("levels.level" .. arg[i + 1])
 		current_level = "level" .. arg[i + 1]
 		game_state = "base"
+		warp = true
 	end
 end
 
@@ -322,24 +327,46 @@ local function nuke_doors()
 	end
 end
 
-local function change_level(level_name, x, y, open)
-	if level_name then
-		history = {}
-		nuke_level()
-		level = require("levels." .. level_name)
-		last_entrance.x = x
-		last_entrance.y = y
-		player.x = x
-		player.y = y
-		current_level = level_name
+local function change_level(level_name, pos, open)
+	if not level_name then
+		return
+	end
 
-		if solved_levels[current_level] then
-			nuke_doors()
-		end
+	history = {}
+	nuke_level()
+	level = require("levels." .. level_name)
 
-		if open then
-			open_entrance()
+	if not pos and level.properties.start then
+		if level.properties.start == "north" then
+			pos = { 8, 2 }
+			player.facing = dirs.south
+		elseif level.properties.start == "east" then
+			pos = { 14, 7 }
+			player.facing = dirs.west
+		elseif level.properties.start == "south" then
+			pos = { 8, 12 }
+			player.facing = dirs.north
+		elseif level.properties.start == "west" then
+			pos = { 2, 7 }
+			player.facing = dirs.east
 		end
+	elseif not pos then
+		pos = { 8, 12 }
+		player.facing = dirs.north
+	end
+
+	last_entrance.x = pos[1]
+	last_entrance.y = pos[2]
+	player.x = pos[1]
+	player.y = pos[2]
+	current_level = level_name
+
+	if solved_levels[current_level] then
+		nuke_doors()
+	end
+
+	if open then
+		open_entrance()
 	end
 end
 
@@ -415,13 +442,13 @@ function player.move()
 		if current_level == "level16" then
 			game_state = "end"
 		end
-		change_level(level.properties.north, 8, 12, true)
+		change_level(level.properties.north, { 8, 12 }, true)
 	elseif player.x == 15 and player.y == 7 then
-		change_level(level.properties.east, 2, 7, true)
+		change_level(level.properties.east, { 2, 7 }, true)
 	elseif player.x == 8 and player.y == 13 then
-		change_level(level.properties.south, 8, 2, true)
+		change_level(level.properties.south, { 8, 2 }, true)
 	elseif player.x == 1 and player.y == 7 then
-		change_level(level.properties.west, 14, 7, true)
+		change_level(level.properties.west, { 14, 7 }, true)
 	end
 
 	return "floor"
@@ -773,7 +800,7 @@ states["end"].update = function(dt)
 			states["end"].msg_count = states["end"].msg_count + 1
 			if not msg_end[states["end"].msg_count] then
 				wait = 0.5
-				change_level(level_names[1], 8, 12)
+				change_level(level_names[1], { 8, 12 })
 				game_state = "title"
 				return
 			end
@@ -837,6 +864,10 @@ function love.load()
 			player.quads[i + (j - 1) * 4] = love.graphics.newQuad((i - 1) * 16, (j - 1) * 24, 16, 24, 64, 96)
 		end
 	end
+
+	if warp then
+		change_level(current_level)
+	end
 end
 
 function love.draw()
@@ -854,18 +885,16 @@ function love.keypressed(key, scancode, isrepeat)
 	elseif key == "pagedown" then
 		local new_level = level_names[level_ids[current_level] + 1]
 		if new_level then
-			player.facing = dirs.north
-			change_level(new_level, 8, 12)
+			change_level(new_level)
 		else
-			change_level(level_names[1], 8, 12)
+			change_level(level_names[1])
 		end
 	elseif key == "pageup" then
 		local new_level = level_names[level_ids[current_level] - 1]
 		if new_level then
-			player.facing = dirs.north
-			change_level(new_level, 8, 12)
+			change_level(new_level)
 		else
-			change_level(level_names[#level_names], 8, 12)
+			change_level(level_names[#level_names])
 		end
 	elseif key == "delete" then
 		nuke_doors()
@@ -885,10 +914,15 @@ function love.keypressed(key, scancode, isrepeat)
 			reset_level()
 			return
 		end
+
 		level.layers[1].data = copy_table(data[1])
 		player.facing = data[2]
 		player.x = data[3]
 		player.y = data[4]
+
+		if solved_levels[current_level] then
+			nuke_doors()
+		end
 	elseif key == "=" then
 		local _, _, flags = love.window.getMode()
 		local width, height = love.window.getDesktopDimensions(flags.display)
@@ -914,10 +948,6 @@ function love.keypressed(key, scancode, isrepeat)
 
 		if love.keyboard.isDown("lshift", "rshift") then
 			solved_levels[current_level] = nil
-		end
-
-		if solved_levels[current_level] then
-			nuke_doors()
 		end
 	elseif key == "f1" then
 		print(current_level)

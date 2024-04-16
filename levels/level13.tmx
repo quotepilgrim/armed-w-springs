@@ -5,6 +5,7 @@
  </editorsettings>
  <properties>
   <property name="east" value="level12"/>
+  <property name="start" value="east"/>
  </properties>
  <tileset firstgid="1" source="level_tiles.tsx"/>
  <layer id="1" name="base" width="17" height="15">

@@ -8,7 +8,7 @@
  <tile id="4" type="wall"/>
  <tile id="5" type="wall"/>
  <tile id="6" type="wall"/>
- <tile id="7" type="wall"/>
+ <tile id="7" type="box"/>
  <tile id="8" type="wall"/>
  <tile id="9" type="floor"/>
  <tile id="10" type="wall"/>
@@ -16,7 +16,6 @@
  <tile id="12" type="wall"/>
  <tile id="13" type="wall"/>
  <tile id="14" type="wall"/>
- <tile id="15" type="wall"/>
  <tile id="16" type="wall"/>
  <tile id="17" type="wall"/>
  <tile id="18" type="wall"/>
@@ -24,7 +23,6 @@
  <tile id="20" type="wall"/>
  <tile id="21" type="wall"/>
  <tile id="22" type="wall"/>
- <tile id="23" type="wall"/>
  <tile id="24" type="goal"/>
  <tile id="25" type="box"/>
  <tile id="26" type="box"/>
@@ -45,6 +43,13 @@
  <tile id="41" type="door"/>
  <tile id="42" type="door"/>
  <tile id="43" type="door"/>
+ <tile id="44" type="plate"/>
  <tile id="45" type="box"/>
  <tile id="46" type="box"/>
+ <tile id="47" type="wall"/>
+ <tile id="49" type="plate"/>
+ <tile id="50" type="floor"/>
+ <tile id="51" type="hole"/>
+ <tile id="52" type="hole"/>
+ <tile id="53" type="floor"/>
 </tileset>
