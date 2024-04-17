@@ -3,6 +3,7 @@ local level_names = require("levels.list")
 local id = require("id")
 local current_level = "level1"
 local data = {}
+local save_history = true
 local states = {
 	title = {},
 	starting = {},
@@ -182,6 +183,10 @@ local function move_box(pos, direction)
 		return false
 	end
 
+	if data[pos] == id.box_on_plate and data[new_pos] == id.tile and states.moving.has_moved then
+		return false
+	end
+
 	for _, v in pairs(id.holes) do
 		if data[new_pos] == v then
 			data[new_pos] = id.box_floor
@@ -189,7 +194,6 @@ local function move_box(pos, direction)
 			if data[new_pos + level.width] == id.holes[1] then
 				data[new_pos + level.width] = id.holes[3]
 			end
-			states.moving.stop_sound = sounds.hit
 		end
 	end
 
@@ -503,7 +507,6 @@ function states.base.update(dt)
 			if spring then
 				update_history()
 				pos = player.move_attempt
-				states.moving.stop_sound = sounds.hit
 				game_state = "moving"
 				return
 			end
@@ -545,19 +548,25 @@ function states.moving.update(dt)
 				clear_level()
 			end
 
+			if states.moving.has_moved and (data[pos] == id.box_on_plate or data[pos] == id.box_on_bplate) then
+				flip_tiles()
+				states.moving.stop_sound = sounds.click
+			else
+				states.moving.stop_sound = sounds.hit
+			end
+
 			if states.moving.has_moved then
 				if not sounds.door:isPlaying() then
 					states.moving.stop_sound:play()
 				end
 			end
 
-			if data[pos] == id.box_on_bplate then
-				flip_tiles()
-			end
-
 			states.moving.has_moved = false
 			game_state = "base"
 		else
+			if not states.moving.has_moved and data[pos] == id.plate then
+				flip_tiles()
+			end
 			states.moving.has_moved = true
 		end
 
