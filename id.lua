@@ -75,4 +75,19 @@ t.doors = {
 	44,
 }
 
+t.box_to_floor = {
+	[id.box] = id.floor,
+	[id.box_on_goal] = id.goal,
+	[id.box_on_tile] = id.tile,
+	[id.box_on_plate] = id.plate,
+	[id.box_on_bplate] = id.bplate,
+	[id.box_on_box] = id.box_floor,
+}
+
+t.floor_to_box = {}
+
+for k, v in pairs(t.box_to_floor) do
+	t.floor_to_box[v] = k
+end
+
 return t

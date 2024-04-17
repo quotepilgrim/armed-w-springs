@@ -148,6 +148,7 @@ local function move_box(pos, direction)
 	local found_box = false
 	local x = math.fmod(pos, level.width)
 	local y = math.floor(pos / level.height)
+	local hole = false
 
 	if x <= 1 or x >= level.width then
 		data[pos] = id.floor
@@ -179,52 +180,22 @@ local function move_box(pos, direction)
 
 	if check_wall(new_pos, true) or check_box(new_pos) then
 		return false
-	elseif data[pos] == id.box then
-		data[pos] = id.floor
-	elseif data[pos] == id.box_on_goal then
-		data[pos] = id.goal
-	elseif data[pos] == id.box_on_tile then
-		data[pos] = id.tile
-	elseif data[pos] == id.box_on_plate then
-		if states.moving.has_moved and data[new_pos] == id.tile then
-			return false
-		end
-		data[pos] = id.plate
-		tile_flip = true
-	elseif data[pos] == id.box_on_bplate then
-		data[pos] = id.bplate
-	elseif data[pos] == id.box_on_box then
-		data[pos] = id.box_floor
-	end
-
-	if data[new_pos] == id.floor then
-		data[new_pos] = id.box
-		states.moving.stop_sound = sounds.hit
-	elseif data[new_pos] == id.goal then
-		data[new_pos] = id.box_on_goal
-		states.moving.stop_sound = sounds.hit
-	elseif data[new_pos] == id.tile then
-		data[new_pos] = id.box_on_tile
-		states.moving.stop_sound = sounds.hit
-	elseif data[new_pos] == id.plate then
-		data[new_pos] = id.box_on_plate
-		states.moving.stop_sound = sounds.click
-		flip_tiles()
-	elseif data[new_pos] == id.bplate then
-		data[new_pos] = id.box_on_bplate
-		states.moving.stop_sound = sounds.click
-	elseif data[new_pos] == id.box_floor then
-		data[new_pos] = id.box_on_box
 	end
 
 	for _, v in pairs(id.holes) do
 		if data[new_pos] == v then
 			data[new_pos] = id.box_floor
+			hole = true
 			if data[new_pos + level.width] == id.holes[1] then
 				data[new_pos + level.width] = id.holes[3]
 			end
 			states.moving.stop_sound = sounds.hit
 		end
+	end
+
+	data[pos] = id.box_to_floor[data[pos]]
+	if not hole then
+		data[new_pos] = id.floor_to_box[data[new_pos]]
 	end
 
 	return true
