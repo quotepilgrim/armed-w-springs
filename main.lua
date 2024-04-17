@@ -1,6 +1,8 @@
 local level = require("levels.level1")
 local level_names = require("levels.list")
+local id = require("id")
 local current_level = "level1"
+local data = {}
 local states = {
 	title = {},
 	starting = {},
@@ -14,7 +16,7 @@ local states = {
 local game_state = "title"
 local pos = 0
 local facing = 0
-local solved_levels = {}
+local solved_levels = { count = 0 }
 local history = {}
 local messages = {}
 local sounds = {}
@@ -76,69 +78,6 @@ for i, v in ipairs(level_names) do
 	level_ids[v] = i
 end
 
-local floor = 10
-local goal = 25
-local box = 26
-local box_on_goal = 27
-local block = 39
-local tile = 40
-local plate = 45
-local box_on_plate = 46
-local box_on_tile = 47
-
-local walls = {
-	1,
-	2,
-	3,
-	4,
-	5,
-	6,
-	7,
-	8,
-	9,
-	11,
-	12,
-	13,
-	14,
-	15,
-	16,
-	17,
-	18,
-	19,
-	20,
-	21,
-	22,
-	23,
-	24,
-	28,
-	29,
-	30,
-	31,
-	32,
-	37,
-	38,
-	39,
-	48,
-}
-
-local boxes = {
-	box,
-	box_on_goal,
-	box_on_plate,
-	box_on_tile,
-}
-
-local doors = {
-	33,
-	34,
-	35,
-	36,
-	41,
-	42,
-	43,
-	44,
-}
-
 local player = {}
 local antag = {}
 
@@ -167,30 +106,40 @@ local function coords_to_index(x, y)
 end
 
 local function copy_table(t)
-	local data = {}
+	local result = {}
 	for k, v in pairs(t) do
-		data[k] = v
+		result[k] = v
 	end
-	return data
+	return result
 end
 
 local function update_history()
-	table.insert(history, { copy_table(level.layers[1].data), player.facing, player.x, player.y })
+	table.insert(history, { copy_table(data), player.facing, player.x, player.y })
 end
 
 local function goal_in_level()
-	for _, v in pairs(level.layers[1].data) do
-		if v == goal then
+	for _, v in pairs(data) do
+		if v == id.goal then
 			return true
 		end
 	end
 	return false
 end
 
-local function check_wall(pos)
-	for _, t in pairs({ walls, doors }) do
+local function check_wall(pos, is_box)
+	for _, t in pairs({ id.walls, id.doors }) do
 		for _, v in pairs(t) do
-			if level.layers[1].data[pos] == v then
+			if data[pos] == v then
+				return true
+			end
+		end
+	end
+
+	if is_box and data[pos] == id.box_wall then
+		return true
+	elseif not is_box then
+		for _, v in pairs(id.holes) do
+			if data[pos] == v then
 				return true
 			end
 		end
@@ -199,20 +148,21 @@ local function check_wall(pos)
 end
 
 local function check_box(pos)
-	for i, v in pairs(boxes) do
-		if level.layers[1].data[pos] == v then
+	for i, v in pairs(id.boxes) do
+		if data[pos] == v then
 			return true
 		end
 	end
+
 	return false
 end
 
 local function flip_tiles()
-	for i, v in pairs(level.layers[1].data) do
-		if v == block then
-			level.layers[1].data[i] = tile
-		elseif v == tile and not (coords_to_index(player.x, player.y) == i) then
-			level.layers[1].data[i] = block
+	for i, v in pairs(data) do
+		if v == id.block then
+			data[i] = id.tile
+		elseif v == id.tile and not (coords_to_index(player.x, player.y) == i) then
+			data[i] = id.block
 		end
 	end
 end
@@ -223,15 +173,15 @@ local function move_box(pos, direction)
 	local y = math.floor(pos / level.height)
 
 	if x <= 1 or x >= level.width then
-		level.layers[1].data[pos] = floor
+		data[pos] = id.floor
 	end
 
 	if not spring then
 		update_history()
 	end
 
-	for _, v in pairs(boxes) do
-		if level.layers[1].data[pos] == v then
+	for _, v in pairs(id.boxes) do
+		if data[pos] == v then
 			found_box = true
 		end
 	end
@@ -250,80 +200,94 @@ local function move_box(pos, direction)
 		new_pos = pos - 1
 	end
 
-	if check_wall(new_pos) or check_box(new_pos) then
+	if check_wall(new_pos, true) or check_box(new_pos) then
 		return false
-	elseif level.layers[1].data[pos] == box then
-		level.layers[1].data[pos] = floor
-	elseif level.layers[1].data[pos] == box_on_goal then
-		level.layers[1].data[pos] = goal
-	elseif level.layers[1].data[pos] == box_on_tile then
-		level.layers[1].data[pos] = tile
-	elseif level.layers[1].data[pos] == box_on_plate then
-		if states.moving.has_moved and level.layers[1].data[new_pos] == tile then
+	elseif data[pos] == id.box then
+		data[pos] = id.floor
+	elseif data[pos] == id.box_on_goal then
+		data[pos] = id.goal
+	elseif data[pos] == id.box_on_tile then
+		data[pos] = id.tile
+	elseif data[pos] == id.box_on_plate then
+		if states.moving.has_moved and data[new_pos] == id.tile then
 			return false
 		end
-		level.layers[1].data[pos] = plate
+		data[pos] = id.plate
 		tile_flip = true
+	elseif data[pos] == id.box_on_bplate then
+		data[pos] = id.bplate
+	elseif data[pos] == id.box_on_box then
+		data[pos] = id.box_floor
 	end
 
-	if level.layers[1].data[new_pos] == floor then
-		level.layers[1].data[new_pos] = box
+	if data[new_pos] == id.floor then
+		data[new_pos] = id.box
 		states.moving.stop_sound = sounds.hit
-	elseif level.layers[1].data[new_pos] == goal then
-		level.layers[1].data[new_pos] = box_on_goal
+	elseif data[new_pos] == id.goal then
+		data[new_pos] = id.box_on_goal
 		states.moving.stop_sound = sounds.hit
-	elseif level.layers[1].data[new_pos] == tile then
-		level.layers[1].data[new_pos] = box_on_tile
+	elseif data[new_pos] == id.tile then
+		data[new_pos] = id.box_on_tile
 		states.moving.stop_sound = sounds.hit
-	elseif level.layers[1].data[new_pos] == plate then
-		level.layers[1].data[new_pos] = box_on_plate
+	elseif data[new_pos] == id.plate then
+		data[new_pos] = id.box_on_plate
 		states.moving.stop_sound = sounds.click
 		flip_tiles()
+	elseif data[new_pos] == id.bplate then
+		data[new_pos] = id.box_on_bplate
+		states.moving.stop_sound = sounds.click
+	elseif data[new_pos] == id.box_floor then
+		data[new_pos] = id.box_on_box
+	end
+
+	for _, v in pairs(id.holes) do
+		if data[new_pos] == v then
+			data[new_pos] = id.box_floor
+			if data[new_pos + level.width] == id.holes[1] then
+				data[new_pos + level.width] = id.holes[3]
+			end
+			states.moving.stop_sound = sounds.hit
+		end
 	end
 
 	return true
 end
 
-local function nuke_level()
-	package.loaded["levels." .. current_level] = nil
-	_G["levels." .. current_level] = nil
-end
-
 local function open_entrance()
 	if player.facing == dirs.north then
-		if not (level.layers[1].data[coords_to_index(8, 13)] == 36) then
+		if not (data[coords_to_index(8, 13)] == 36) then
 			return
 		end
-		level.layers[1].data[coords_to_index(8, 13)] = 10
-		level.layers[1].data[coords_to_index(8, 14)] = 10
+		data[coords_to_index(8, 13)] = 10
+		data[coords_to_index(8, 14)] = 10
 	end
 
 	if player.facing == dirs.east then
-		level.layers[1].data[coords_to_index(0, 7)] = 10
-		level.layers[1].data[coords_to_index(1, 7)] = 10
+		data[coords_to_index(0, 7)] = 10
+		data[coords_to_index(1, 7)] = 10
 	end
 
 	if player.facing == dirs.south then
-		level.layers[1].data[coords_to_index(8, 1)] = 10
-		level.layers[1].data[coords_to_index(8, 0)] = 10
+		data[coords_to_index(8, 1)] = 10
+		data[coords_to_index(8, 0)] = 10
 	end
 
 	if player.facing == dirs.west then
-		level.layers[1].data[coords_to_index(15, 7)] = 10
-		level.layers[1].data[coords_to_index(16, 7)] = 10
+		data[coords_to_index(15, 7)] = 10
+		data[coords_to_index(16, 7)] = 10
 	end
 end
 
 local function nuke_doors()
 	if current_level == "level16" and solved_levels.count == #level_names then
-		level.layers[1].data[coords_to_index(8, 0)] = 49
-		level.layers[1].data[coords_to_index(8, 1)] = 57
+		data[coords_to_index(8, 0)] = 49
+		data[coords_to_index(8, 1)] = 57
 	end
 
-	for i, v in ipairs(level.layers[1].data) do
-		for _, d in ipairs(doors) do
+	for i, v in ipairs(data) do
+		for _, d in ipairs(id.doors) do
 			if v == d then
-				level.layers[1].data[i] = 10
+				data[i] = 10
 			end
 		end
 	end
@@ -335,8 +299,8 @@ local function change_level(level_name, pos, open)
 	end
 
 	history = {}
-	nuke_level()
 	level = require("levels." .. level_name)
+	data = copy_table(level.layers[1].data)
 
 	if not pos and level.properties.start then
 		if level.properties.start == "north" then
@@ -373,8 +337,7 @@ local function change_level(level_name, pos, open)
 end
 
 local function reset_level()
-	nuke_level()
-	level = require("levels." .. current_level)
+	data = copy_table(level.layers[1].data)
 	player.x = last_entrance.x
 	player.y = last_entrance.y
 	if player.y == 2 then
@@ -388,6 +351,9 @@ local function reset_level()
 	end
 	if player.x == 2 then
 		player.facing = dirs.east
+	end
+	if solved_levels[current_level] then
+		nuke_doors()
 	end
 	open_entrance()
 end
@@ -473,8 +439,8 @@ end
 function states.base.draw()
 	love.graphics.scale(scale, scale)
 	love.graphics.translate(offset_x - 8, offset_y - 8)
-	for k, v in pairs(level.layers[1].data) do
-		love.graphics.draw(sheet, tiles[v], math.fmod(k - 1, level.width) * 16, math.floor((k - 1) / level.width) * 16)
+	for i, v in ipairs(data) do
+		love.graphics.draw(sheet, tiles[v], math.fmod(i - 1, level.width) * 16, math.floor((i - 1) / level.width) * 16)
 	end
 	love.graphics.draw(
 		player[player.sprite],
@@ -630,11 +596,17 @@ function states.moving.update(dt)
 			if not goal_in_level() and not solved_levels[current_level] then
 				clear_level()
 			end
+
 			if states.moving.has_moved then
 				if not sounds.door:isPlaying() then
 					states.moving.stop_sound:play()
 				end
 			end
+
+			if data[pos] == id.box_on_bplate then
+				flip_tiles()
+			end
+
 			states.moving.has_moved = false
 			game_state = "base"
 		else
@@ -712,9 +684,9 @@ function states.event_3_1.draw()
 end
 
 function states.event_3_1.update(dt)
-	level.layers[1].data[coords_to_index(8, 0)] = floor
-	level.layers[1].data[coords_to_index(8, 1)] = floor
-	level.layers[1].data[coords_to_index(8, 3)] = tile
+	data[coords_to_index(8, 0)] = id.floor
+	data[coords_to_index(8, 1)] = id.floor
+	data[coords_to_index(8, 3)] = id.tile
 	move_timer = move_timer + dt
 	frame_timer = frame_timer + dt
 	if frame_timer > 0.15 then
@@ -753,9 +725,9 @@ function states.event_3_1_5.update(dt)
 		antag.y = antag.y - 1
 	end
 	if antag.y == -2 then
-		level.layers[1].data[coords_to_index(8, 0)] = 33
-		level.layers[1].data[coords_to_index(8, 1)] = 41
-		level.layers[1].data[coords_to_index(8, 3)] = 39
+		data[coords_to_index(8, 0)] = 33
+		data[coords_to_index(8, 1)] = 41
+		data[coords_to_index(8, 3)] = 39
 		sounds.door:play()
 		move_timer = 0
 		event_name = ""
@@ -850,7 +822,6 @@ function love.load()
 		["push"] = love.audio.newSource("sounds/push.wav", "static"),
 	}
 	states.moving.stop_sound = sounds.hit
-	solved_levels.count = 0
 
 	player.quads = {}
 	player.x = 8
@@ -887,6 +858,8 @@ function love.load()
 
 	if warp then
 		change_level(current_level)
+	else
+		data = copy_table(level.layers[1].data)
 	end
 end
 
@@ -935,16 +908,16 @@ function love.keypressed(key, scancode, isrepeat)
 		if not (game_state == "base") then
 			return
 		end
-		local data = table.remove(history)
-		if not data then
+		local entry = table.remove(history)
+		if not entry then
 			reset_level()
 			return
 		end
 
-		level.layers[1].data = copy_table(data[1])
-		player.facing = data[2]
-		player.x = data[3]
-		player.y = data[4]
+		data = copy_table(entry[1])
+		player.facing = entry[2]
+		player.x = entry[3]
+		player.y = entry[4]
 
 		if solved_levels[current_level] then
 			nuke_doors()

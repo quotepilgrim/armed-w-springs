@@ -8,7 +8,6 @@
  <tile id="4" type="wall"/>
  <tile id="5" type="wall"/>
  <tile id="6" type="wall"/>
- <tile id="7" type="box"/>
  <tile id="8" type="wall"/>
  <tile id="9" type="floor"/>
  <tile id="10" type="wall"/>
@@ -51,5 +50,8 @@
  <tile id="50" type="floor"/>
  <tile id="51" type="hole"/>
  <tile id="52" type="hole"/>
- <tile id="53" type="floor"/>
+ <tile id="53" type="hole"/>
+ <tile id="54" type="box"/>
+ <tile id="55" type="box"/>
+ <tile id="57" type="floor"/>
 </tileset>
