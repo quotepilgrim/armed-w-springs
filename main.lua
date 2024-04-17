@@ -903,6 +903,9 @@ function love.keypressed(key, scancode, isrepeat)
 		end
 
 		if love.keyboard.isDown("lshift", "rshift") then
+			if not solved_levels[current_level] then
+				return
+			end
 			solved_levels[current_level] = nil
 			solved_levels.count = solved_levels.count - 1
 		end
