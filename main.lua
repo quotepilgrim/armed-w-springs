@@ -13,6 +13,7 @@ local states = {
 	event_3_1 = {},
 	event_3_1_5 = {},
 }
+
 local game_state = "title"
 local pos = 0
 local facing = 0
@@ -29,31 +30,7 @@ local key_pressed = false
 local offset_x, offset_y = 0, 0
 local width, height, flags = 0, 0, {}
 
-local msg_level3 = {}
-msg_level3[1] = {
-	{ "antag", "Summers, autumns, winters,\nyour arms are now springs!" },
-	{ "player", "Uh, what?" },
-}
-
-msg_level3[2] = {
-	{ "player", "What the hell was that?" },
-	{ "player", "Also, how am I going to push\nboxes with these stupid spring arms?" },
-}
-
-msg_level3[3] = {
-	{ "player", "Well, here goes nothing!" },
-}
-
-msg_level3[4] = {
-	{ "player", "Dammit!, it went much further\nthan I was expecting." },
-	{ "player", "..." },
-	{ "player", "I can already tell this is going to\nmake getting the boxes where\nI want to a huge pain." },
-}
-
-msg_end = {
-	{ "You have solved all of the\ncurrently available levels!" },
-	{ "Thank you for playing!" },
-}
+local msg = require("msg")
 
 local tiles = {}
 local scale = 4
@@ -533,18 +510,18 @@ function states.base.update(dt)
 				if event_name == "3_1" then
 					move_timer = 0
 					event_count = 1
-					messages = msg_level3[1]
+					messages = msg.level3[1]
 				elseif event_name == "3_2" then
-					messages = msg_level3[2]
+					messages = msg.level3[2]
 				elseif event_name == "3_3" then
-					messages = msg_level3[3]
+					messages = msg.level3[3]
 				elseif event_name == "3_3.5" then
 					spring = true
 					pos = player.move_attempt
 					game_state = "moving"
 					return
 				elseif event_name == "3_4" then
-					messages = msg_level3[4]
+					messages = msg.level3[4]
 				end
 				current_message = table.remove(messages, 1)
 				message_text:set(current_message[2])
@@ -892,7 +869,7 @@ function love.keypressed(key, scancode, isrepeat)
 			change_level(level_names[#level_names])
 		end
 	elseif key == "delete" then
-		if love.keyboard.isDown("lshift", "rshift") then
+		if love.keyboard.isDown("lshift", "rshift") and not solved_levels[current_level] then
 			clear_level(current_level)
 		else
 			nuke_doors()
@@ -945,14 +922,14 @@ function love.keypressed(key, scancode, isrepeat)
 			return
 		end
 
-		reset_level()
-
 		if love.keyboard.isDown("lshift", "rshift") then
 			solved_levels[current_level] = nil
 			solved_levels.count = solved_levels.count - 1
 		end
+
+		reset_level()
 	elseif key == "f1" then
-		print(current_level)
+		print(current_level, solved_levels.count, #level_names)
 	elseif key == "f11" then
 		if not love.window.getFullscreen() then
 			width, height, flags = love.window.getMode()
