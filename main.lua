@@ -25,7 +25,7 @@ local portraits = {}
 local starting = true
 local key_pressed = false
 local offset_x, offset_y = 0, 0
-local width, height, flags = {}
+local width, height, flags = 0, 0, {}
 
 local msg_level3 = {}
 msg_level3[1] = {
@@ -400,7 +400,7 @@ local function clear_level()
 end
 
 local function rescale(w, h)
-	if h > w then
+	if h > w * 0.875 then
 		scale = w / 256
 	else
 		scale = h / 224
@@ -899,7 +899,9 @@ function love.update(dt)
 end
 
 function love.keypressed(key, scancode, isrepeat)
-	key_pressed = true
+	if key ~= "f11" then
+		key_pressed = true
+	end
 	if key == "escape" then
 		love.event.quit()
 	elseif key == "pagedown" then
@@ -917,7 +919,11 @@ function love.keypressed(key, scancode, isrepeat)
 			change_level(level_names[#level_names])
 		end
 	elseif key == "delete" then
-		nuke_doors()
+		if love.keyboard.isDown("lshift", "rshift") then
+			clear_level(current_level)
+		else
+			nuke_doors()
+		end
 	elseif key == "insert" then
 		if spring then
 			player.sprite = "normal"
@@ -970,6 +976,7 @@ function love.keypressed(key, scancode, isrepeat)
 
 		if love.keyboard.isDown("lshift", "rshift") then
 			solved_levels[current_level] = nil
+			solved_levels.count = solved_levels.count - 1
 		end
 	elseif key == "f1" then
 		print(current_level)
