@@ -24,6 +24,8 @@ local current_message = ""
 local portraits = {}
 local starting = true
 local key_pressed = false
+local offset_x, offset_y = 0, 0
+local width, height, flags = {}
 
 local msg_level3 = {}
 msg_level3[1] = {
@@ -390,11 +392,21 @@ local function reset_level()
 	open_entrance()
 end
 
-function clear_level()
+local function clear_level()
 	solved_levels[current_level] = true
 	solved_levels.count = solved_levels.count + 1
 	nuke_doors()
 	sounds.door:play()
+end
+
+local function rescale(w, h)
+	if h > w then
+		scale = w / 256
+	else
+		scale = h / 224
+	end
+	offset_x = math.floor((w / scale - 256) / 2)
+	offset_y = math.floor((h / scale - 224) / 2)
 end
 
 function player.move()
@@ -460,7 +472,7 @@ end
 
 function states.base.draw()
 	love.graphics.scale(scale, scale)
-	love.graphics.translate(-8, -8)
+	love.graphics.translate(offset_x - 8, offset_y - 8)
 	for k, v in pairs(level.layers[1].data) do
 		love.graphics.draw(sheet, tiles[v], math.fmod(k - 1, level.width) * 16, math.floor((k - 1) / level.width) * 16)
 	end
@@ -470,6 +482,12 @@ function states.base.draw()
 		player.x * 16,
 		player.y * 16 - 10
 	)
+	love.graphics.setColor(0, 0, 0)
+	love.graphics.rectangle("fill", 0, 0, 8, 232)
+	love.graphics.rectangle("fill", 0, 0, 264, 8)
+	love.graphics.rectangle("fill", 264, 0, 8, 232)
+	love.graphics.rectangle("fill", 0, 232, 264, 8)
+	love.graphics.setColor(1, 1, 1)
 end
 
 function states.base.update(dt)
@@ -748,6 +766,7 @@ end
 
 function states.title.draw()
 	love.graphics.scale(scale)
+	love.graphics.translate(offset_x, offset_y)
 	love.graphics.draw(title, 0, 0)
 end
 
@@ -812,7 +831,8 @@ states["end"].update = function(dt)
 end
 
 function love.load()
-	love.window.setMode(256 * scale, 224 * scale)
+	love.window.setMode(256 * scale, 224 * scale, { resizable = true, minwidth = 512, minheight = 448 })
+	width, height, flags = love.window.getMode()
 	love.graphics.setDefaultFilter("nearest", "nearest")
 	sheet = love.graphics.newImage("graphics/level_tiles.png")
 	msg_font = love.graphics.newFont("graphics/PixeloidSans.ttf", 9, "mono")
@@ -926,19 +946,21 @@ function love.keypressed(key, scancode, isrepeat)
 	elseif key == "=" then
 		local _, _, flags = love.window.getMode()
 		local width, height = love.window.getDesktopDimensions(flags.display)
-		local new_scale = scale + 1
+		local new_scale = math.floor(scale) + 1
 		if 256 * new_scale > width or 224 * new_scale > height then
-			return
+			new_scale = new_scale - 1
 		end
 		scale = new_scale
-		love.window.setMode(256 * scale, 224 * scale)
+		love.window.setMode(256 * scale, 224 * scale, { resizable = true, minwidth = 512, minheight = 448 })
+		offset_x, offset_y = 0, 0
 	elseif key == "-" then
-		local new_scale = scale - 1
+		local new_scale = math.ceil(scale) - 1
 		if new_scale < 2 then
-			return
+			new_scale = 2
 		end
 		scale = new_scale
-		love.window.setMode(256 * scale, 224 * scale)
+		love.window.setMode(256 * scale, 224 * scale, { resizable = true, minwidth = 512, minheight = 448 })
+		offset_x, offset_y = 0, 0
 	elseif key == "r" or key == "home" then
 		if not (game_state == "base") then
 			return
@@ -951,9 +973,23 @@ function love.keypressed(key, scancode, isrepeat)
 		end
 	elseif key == "f1" then
 		print(current_level)
+	elseif key == "f11" then
+		if not love.window.getFullscreen() then
+			width, height, flags = love.window.getMode()
+			love.window.setFullscreen(true)
+		else
+			love.window.setMode(width, height, flags)
+			rescale(width, height)
+		end
 	end
 end
 
 function love.keyreleased(key, scancode, isrepeat)
 	key_pressed = false
+end
+
+function love.resize(w, h)
+	WindowWidth = w
+	WindowHeight = h
+	rescale(w, h)
 end
