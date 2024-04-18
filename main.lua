@@ -519,6 +519,7 @@ function states.base.update(dt)
 			end
 
 			old_data = copy_table(data)
+
 			if spring then
 				update_history(old_data)
 				pos = player.move_attempt
