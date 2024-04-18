@@ -3,6 +3,7 @@ local level_names = require("levels.list")
 local id = require("id")
 local current_level = "level1"
 local data = {}
+local old_data = {}
 local save_history = true
 local states = {
 	title = {},
@@ -91,8 +92,25 @@ local function copy_table(t)
 	return result
 end
 
-local function update_history()
-	table.insert(history, { copy_table(data), player.facing, player.x, player.y })
+local function diff_table(t1, t2)
+	for i, v in ipairs(t1) do
+		if v ~= t2[i] then
+			return true
+		end
+	end
+	return false
+end
+
+local function update_history(t)
+	local update = false
+	if #history > 0 then
+		update = diff_table(history[#history][1], t)
+	else
+		update = true
+	end
+	if update then
+		table.insert(history, { copy_table(t), player.facing, player.x, player.y })
+	end
 end
 
 local function goal_in_level()
@@ -153,10 +171,6 @@ local function move_box(pos, direction)
 
 	if x <= 1 or x >= level.width then
 		data[pos] = id.floor
-	end
-
-	if not spring then
-		update_history()
 	end
 
 	for _, v in pairs(id.boxes) do
@@ -231,7 +245,7 @@ local function open_entrance()
 end
 
 local function nuke_doors()
-	if current_level == "level16" and solved_levels.count == #level_names then
+	if current_level == "level16" and solved_levels.count >= 16 then
 		data[coords_to_index(8, 0)] = 49
 		data[coords_to_index(8, 1)] = 57
 	end
@@ -504,14 +518,16 @@ function states.base.update(dt)
 				return
 			end
 
+			old_data = copy_table(data)
 			if spring then
-				update_history()
+				update_history(old_data)
 				pos = player.move_attempt
 				game_state = "moving"
 				return
 			end
 
 			if move_box(player.move_attempt, player.facing) then
+				update_history(old_data)
 				player.moved_to = player.move()
 
 				if not sounds.door:isPlaying() then
@@ -738,21 +754,21 @@ states["end"].update = function(dt)
 	if starting then
 		starting = false
 		lock = false
-		messages = copy_table(msg_end)
+		messages = copy_table(msg.end_)
 		states["end"].msg_count = 1
-		message_text:set(msg_end[states["end"].msg_count])
+		message_text:set(msg.end_[states["end"].msg_count])
 	end
 	if love.keyboard.isDown("space") then
 		if not lock then
 			lock = true
 			states["end"].msg_count = states["end"].msg_count + 1
-			if not msg_end[states["end"].msg_count] then
+			if not msg.end_[states["end"].msg_count] then
 				wait = 0.5
 				change_level(level_names[1], { 8, 12 })
 				game_state = "title"
 				return
 			end
-			message_text:set(msg_end[states["end"].msg_count])
+			message_text:set(msg.end_[states["end"].msg_count])
 		end
 	else
 		lock = false
@@ -865,10 +881,16 @@ function love.keypressed(key, scancode, isrepeat)
 		if not (game_state == "base") then
 			return
 		end
+
 		local entry = table.remove(history)
+
 		if not entry then
 			reset_level()
 			return
+		end
+
+		if not diff_table(entry[1], data) then
+			entry = table.remove(history)
 		end
 
 		data = copy_table(entry[1])
