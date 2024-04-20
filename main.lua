@@ -16,7 +16,7 @@ local states = {
 }
 
 local game_state = "title"
-local solved_levels = { count = 0 }
+local solved_levels = {}
 local history = {}
 local messages = {}
 local sounds = {}
@@ -29,6 +29,8 @@ local offset_x, offset_y = 0, 0
 local width, height, flags = 0, 0, {}
 
 local msg = require("msg")
+local msg_font
+local message_box
 
 local tiles = {}
 local scale = 4
@@ -840,6 +842,7 @@ function love.load()
             player.quads[i + (j - 1) * 4] = love.graphics.newQuad((i - 1) * 16, (j - 1) * 24, 16, 24, 64, 96)
         end
     end
+    solved_levels.count = 0
     change_level(current_level)
 end
 
@@ -873,7 +876,7 @@ function love.keypressed(key)
         end
     elseif key == "delete" then
         if love.keyboard.isDown("lshift", "rshift") and not solved_levels[current_level] then
-            clear_level(current_level)
+            clear_level()
         else
             nuke_doors()
         end
@@ -909,8 +912,8 @@ function love.keypressed(key)
             nuke_doors()
         end
     elseif key == "=" then
-        local _, _, flags = love.window.getMode()
-        local width, height = love.window.getDesktopDimensions(flags.display)
+        _, _, flags = love.window.getMode()
+        width, height = love.window.getDesktopDimensions(flags.display)
         local new_scale = math.floor(scale) + 1
         if 256 * new_scale > width or 224 * new_scale > height then
             new_scale = new_scale - 1
