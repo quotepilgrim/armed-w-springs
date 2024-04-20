@@ -128,9 +128,16 @@ local function check_wall(pos, is_box)
         end
     end
 
-    if is_box and data[pos] == id.box_wall then
-        return true
-    elseif not is_box then
+    if is_box then
+        for _, v in pairs(id.oneways) do
+            if data[pos] == v and v ~= id.oneway then
+                return true
+            end
+        end
+        if data[pos] == id.box_wall then
+            return true
+        end
+    else
         for _, v in pairs(id.holes) do
             if data[pos] == v then
                 return true
@@ -209,7 +216,18 @@ local function move_box(pos, direction)
         end
     end
 
-    data[pos] = id.box_to_floor[data[pos]]
+    for _, v in pairs(id.oneways) do
+        if data[new_pos] == v then
+            data[new_pos] = id.oneways[1]
+        end
+    end
+
+    if data[pos] == id.box_on_oneway then
+        data[pos] = id.oneway
+    else
+        data[pos] = id.box_to_floor[data[pos]]
+    end
+
     if not hole then
         data[new_pos] = id.floor_to_box[data[new_pos]]
     end
@@ -494,6 +512,7 @@ function states.base.update(dt)
         end
         if player.moved_to == "box" or event_name == "3_3.5" then
             player.moved_to = ""
+            id.oneway = id.oneways[1] + player.facing
             if current_level == "level3" and #events.level3 > 0 then
                 event_name = table.remove(events.level3, 1)
                 if event_name == "3_1" then
@@ -844,7 +863,7 @@ function love.update(dt)
     states[game_state].update(dt)
 end
 
-function love.keypressed(key, scancode, isrepeat)
+function love.keypressed(key)
     if key ~= "f11" then
         key_pressed = true
     end
