@@ -16,7 +16,6 @@ local states = {
 }
 
 local game_state = "title"
-local pos = 0
 local solved_levels = { count = 0 }
 local history = {}
 local messages = {}
@@ -209,12 +208,6 @@ local function move_box(pos, direction)
             if data[new_pos + level.width] == id.holes[1] then
                 data[new_pos + level.width] = id.holes[3]
             end
-        end
-    end
-
-    for _, v in pairs(id.oneways) do
-        if data[new_pos] == v then
-            data[new_pos] = id.oneways[1]
         end
     end
 
@@ -523,7 +516,7 @@ function states.base.update(dt)
                     messages = msg.level3[3]
                 elseif event_name == "3_3.5" then
                     spring = true
-                    pos = player.move_attempt
+                    states.moving.pos = player.move_attempt
                     game_state = "moving"
                     return
                 elseif event_name == "3_4" then
@@ -539,7 +532,7 @@ function states.base.update(dt)
 
             if spring then
                 update_history(old_data)
-                pos = player.move_attempt
+                states.moving.pos = player.move_attempt
                 game_state = "moving"
                 return
             end
@@ -573,6 +566,7 @@ end
 states.moving.draw = states.base.draw
 
 function states.moving.update(dt)
+    local pos = states.moving.pos
     move_timer = move_timer + dt
     frame_timer = frame_timer + dt
 

@@ -101,4 +101,8 @@ for k, v in pairs(id.box_to_floor) do
     id.floor_to_box[v] = k
 end
 
+for _, v in pairs(id.oneways) do
+    id.floor_to_box[v] = t.box_on_oneway
+end
+
 return id
