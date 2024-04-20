@@ -1,6 +1,6 @@
-local t = {}
+local id = {}
 
-local id = {
+local t = {
     floor = 10,
     goal = 25,
     box = 26,
@@ -19,13 +19,13 @@ local id = {
     box_on_oneway = 63,
 }
 
-for k, v in pairs(id) do
-    t[k] = v
+for k, v in pairs(t) do
+    id[k] = v
 end
 
-t.holes = { 52, 53, 54 }
+id.holes = { 52, 53, 54 }
 
-t.walls = {
+id.walls = {
     1,
     2,
     3,
@@ -57,17 +57,17 @@ t.walls = {
     48,
 }
 
-t.boxes = {
-    id.box,
-    id.box_on_goal,
-    id.box_on_plate,
-    id.box_on_tile,
-    id.box_on_bplate,
-    id.box_on_box,
-    id.box_on_oneway,
+id.boxes = {
+    t.box,
+    t.box_on_goal,
+    t.box_on_plate,
+    t.box_on_tile,
+    t.box_on_bplate,
+    t.box_on_box,
+    t.box_on_oneway,
 }
 
-t.doors = {
+id.doors = {
     33,
     34,
     35,
@@ -78,27 +78,27 @@ t.doors = {
     44,
 }
 
-t.oneways = {
-    id.oneway,
-    id.oneway + 1,
-    id.oneway + 2,
-    id.oneway + 3,
+id.oneways = {
+    t.oneway,
+    t.oneway + 1,
+    t.oneway + 2,
+    t.oneway + 3,
 }
 
-t.box_to_floor = {
-    [id.box] = id.floor,
-    [id.box_on_goal] = id.goal,
-    [id.box_on_tile] = id.tile,
-    [id.box_on_plate] = id.plate,
-    [id.box_on_bplate] = id.bplate,
-    [id.box_on_box] = id.box_floor,
-    [id.box_on_oneway] = id.oneway,
+id.box_to_floor = {
+    [t.box] = t.floor,
+    [t.box_on_goal] = t.goal,
+    [t.box_on_tile] = t.tile,
+    [t.box_on_plate] = t.plate,
+    [t.box_on_bplate] = t.bplate,
+    [t.box_on_box] = t.box_floor,
+    [t.box_on_oneway] = t.oneway,
 }
 
-t.floor_to_box = {}
+id.floor_to_box = {}
 
-for k, v in pairs(t.box_to_floor) do
-    t.floor_to_box[v] = k
+for k, v in pairs(id.box_to_floor) do
+    id.floor_to_box[v] = k
 end
 
-return t
+return id

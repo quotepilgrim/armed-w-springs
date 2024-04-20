@@ -1,4 +1,4 @@
-local level = require("levels.level1")
+local level = {}
 local level_names = require("levels.list")
 local id = require("id")
 local current_level = "level1"
@@ -57,8 +57,6 @@ end
 local player = {}
 local antag = {}
 
-local warp = false
-
 for i, v in ipairs(arg) do
     if v == "--warp" or v == "-w" then
         if tonumber(arg[i + 1]) < 1 or tonumber(arg[i + 1]) > #level_names then
@@ -70,10 +68,8 @@ for i, v in ipairs(arg) do
             spring = true
         end
 
-        level = require("levels.level" .. arg[i + 1])
         current_level = "level" .. arg[i + 1]
         game_state = "base"
-        warp = true
     end
 end
 
@@ -130,7 +126,7 @@ local function check_wall(pos, is_box)
 
     if is_box then
         for _, v in pairs(id.oneways) do
-            if data[pos] == v and v ~= id.oneway then
+            if data[pos] == v and v ~= (id.oneway + player.facing) then
                 return true
             end
         end
@@ -223,7 +219,10 @@ local function move_box(pos, direction)
     end
 
     if data[pos] == id.box_on_oneway then
-        data[pos] = id.oneway
+        data[pos] = level.layers[1].data[pos]
+        if data[pos] == id.box_on_oneway then
+            data[pos] = id.floor
+        end
     else
         data[pos] = id.box_to_floor[data[pos]]
     end
@@ -282,6 +281,7 @@ local function change_level(level_name, pos, open)
 
     history = {}
     level = require("levels." .. level_name)
+
     data = copy_table(level.layers[1].data)
 
     if not pos and level.properties.start then
@@ -512,7 +512,6 @@ function states.base.update(dt)
         end
         if player.moved_to == "box" or event_name == "3_3.5" then
             player.moved_to = ""
-            id.oneway = id.oneways[1] + player.facing
             if current_level == "level3" and #events.level3 > 0 then
                 event_name = table.remove(events.level3, 1)
                 if event_name == "3_1" then
@@ -847,12 +846,7 @@ function love.load()
             player.quads[i + (j - 1) * 4] = love.graphics.newQuad((i - 1) * 16, (j - 1) * 24, 16, 24, 64, 96)
         end
     end
-
-    if warp then
-        change_level(current_level)
-    else
-        data = copy_table(level.layers[1].data)
-    end
+    change_level(current_level)
 end
 
 function love.draw()
