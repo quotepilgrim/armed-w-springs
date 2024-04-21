@@ -272,15 +272,18 @@ end
 local function load_objects()
     local layer
     local w, h = level.tilewidth, level.tileheight
+
     for _, t in pairs(level.layers) do
         if t.type == "objectgroup" then
             layer = t
             break
         end
     end
+
     if not layer then
         return
     end
+
     for _, obj in pairs(layer.objects) do
         local i = coords_to_index(obj.x / w, obj.y / h)
         data[i] = obj.gid or data[i]
@@ -338,6 +341,7 @@ local function reset_level()
     history = {}
     player.x = last_entrance.x
     player.y = last_entrance.y
+
     if player.y == 2 then
         player.facing = dirs.south
     end
@@ -350,9 +354,11 @@ local function reset_level()
     if player.x == 2 then
         player.facing = dirs.east
     end
+
     if solved_levels[current_level] then
         nuke_doors()
     end
+
     open_entrance()
 end
 
@@ -432,20 +438,30 @@ function player.move()
 end
 
 function antag.draw()
-    love.graphics.draw(antag.image, player.quads[antag.frame + 1 + antag.facing * 4], antag.x * 16, antag.y * 16 - 10)
+    love.graphics.draw(
+        antag.image,
+        player.quads[antag.frame + 1 + antag.facing * 4],
+        antag.x * level.tilewidth,
+        antag.y * level.tileheight - 10
+    )
 end
 
 function states.base.draw()
     love.graphics.scale(scale, scale)
     love.graphics.translate(offset_x - 8, offset_y - 8)
     for i, v in ipairs(data) do
-        love.graphics.draw(sheet, tiles[v], math.fmod(i - 1, level.width) * 16, math.floor((i - 1) / level.width) * 16)
+        love.graphics.draw(
+            sheet,
+            tiles[v],
+            math.fmod(i - 1, level.width) * level.tilewidth,
+            math.floor((i - 1) / level.width) * level.tileheight
+        )
     end
     love.graphics.draw(
         player[player.sprite],
         player.quads[player.frame + 1 + player.facing * 4],
-        player.x * 16,
-        player.y * 16 - 10
+        player.x * level.tilewidth,
+        player.y * level.tileheight - 10
     )
     love.graphics.setColor(0, 0, 0)
     love.graphics.rectangle("fill", 0, 0, 8, 232)
@@ -850,9 +866,19 @@ function love.load()
     antag.facing = dirs.south
     antag.frame = 0
 
+    solved_levels.count = 0
+    change_level(current_level)
+
     for i = 1, 8 do
         for j = 1, 8 do
-            tiles[i + (j - 1) * 8] = love.graphics.newQuad((i - 1) * 16, (j - 1) * 16, 16, 16, 128, 128)
+            tiles[i + (j - 1) * 8] = love.graphics.newQuad(
+                (i - 1) * level.tilewidth,
+                (j - 1) * level.tileheight,
+                level.tilewidth,
+                level.tileheight,
+                sheet:getWidth(),
+                sheet:getHeight()
+            )
         end
     end
 
@@ -861,8 +887,6 @@ function love.load()
             player.quads[i + (j - 1) * 4] = love.graphics.newQuad((i - 1) * 16, (j - 1) * 24, 16, 24, 64, 96)
         end
     end
-    solved_levels.count = 0
-    change_level(current_level)
 end
 
 function love.draw()
