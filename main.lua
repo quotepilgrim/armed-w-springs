@@ -931,8 +931,8 @@ function love.keypressed(key)
             nuke_doors()
         end
     elseif key == "=" then
-        local _, _, flags = love.window.getMode()
-        local width, height = love.window.getDesktopDimensions(flags.display)
+        _, _, flags = love.window.getMode()
+        width, height = love.window.getDesktopDimensions(flags.display)
         local new_scale = math.floor(scale) + 1
         if 256 * new_scale > width or 224 * new_scale > height then
             new_scale = new_scale - 1
