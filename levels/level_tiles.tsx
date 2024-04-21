@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.10.2" name="level_tiles" tilewidth="16" tileheight="16" tilecount="64" columns="8">
+<tileset version="1.10" tiledversion="1.10.2" name="level_tiles" tilewidth="16" tileheight="16" tilecount="64" columns="8" objectalignment="topleft">
  <image source="../graphics/level_tiles.png" width="128" height="128"/>
  <tile id="0" type="wall"/>
  <tile id="1" type="wall"/>
@@ -54,4 +54,5 @@
  <tile id="54" type="box"/>
  <tile id="55" type="box"/>
  <tile id="57" type="floor"/>
+ <tile id="62" type="box"/>
 </tileset>

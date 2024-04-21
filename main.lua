@@ -19,6 +19,7 @@ local game_state = "title"
 local solved_levels = {}
 local history = {}
 local messages = {}
+local msg_font, message_box
 local sounds = {}
 local events = { ["level3"] = { "3_1", "3_2", "3_3", "3_3.5", "3_4" } }
 local event_name = nil
@@ -29,8 +30,6 @@ local offset_x, offset_y = 0, 0
 local width, height, flags = 0, 0, {}
 
 local msg = require("msg")
-local msg_font
-local message_box
 
 local tiles = {}
 local scale = 4
@@ -46,6 +45,7 @@ local wait = 0
 local frame_timer = 0
 local move_timer = 0
 local key_count = 0
+local target = 0
 local sheet, lock, message_text, title
 local up, down, left, right
 local level_ids = {}
@@ -269,6 +269,24 @@ local function nuke_doors()
     end
 end
 
+local function load_objects()
+    local layer
+    local w, h = level.tilewidth, level.tileheight
+    for _, t in pairs(level.layers) do
+        if t.type == "objectgroup" then
+            layer = t
+            break
+        end
+    end
+    if not layer then
+        return
+    end
+    for _, obj in pairs(layer.objects) do
+        local i = coords_to_index(obj.x / w, obj.y / h)
+        data[i] = obj.gid or data[i]
+    end
+end
+
 local function change_level(level_name, pos, open)
     if not level_name then
         return
@@ -278,6 +296,7 @@ local function change_level(level_name, pos, open)
     level = require("levels." .. level_name)
 
     data = copy_table(level.layers[1].data)
+    load_objects()
 
     if not pos and level.properties.start then
         if level.properties.start == "north" then
@@ -315,6 +334,7 @@ end
 
 local function reset_level()
     data = copy_table(level.layers[1].data)
+    load_objects()
     history = {}
     player.x = last_entrance.x
     player.y = last_entrance.y
@@ -360,7 +380,7 @@ function player.move()
     local west = coords_to_index(player.x - 1, player.y)
 
     if player.facing == dirs.north then
-        player.move_attempt = north
+        player.target = north
         if check_wall(north) or player.y < 1 then
             return "wall"
         elseif check_box(north) then
@@ -368,7 +388,7 @@ function player.move()
         end
         player.y = player.y - 1
     elseif player.facing == dirs.east then
-        player.move_attempt = east
+        player.target = east
         if check_wall(east) or player.x >= level.width - 1 then
             return "wall"
         elseif check_box(east) then
@@ -376,7 +396,7 @@ function player.move()
         end
         player.x = player.x + 1
     elseif player.facing == dirs.south then
-        player.move_attempt = south
+        player.target = south
         if check_wall(south) or player.y >= level.height - 1 then
             return "wall"
         elseif check_box(south) then
@@ -384,7 +404,7 @@ function player.move()
         end
         player.y = player.y + 1
     elseif player.facing == dirs.west then
-        player.move_attempt = west
+        player.target = west
         if check_wall(west) or player.x < 1 then
             return "wall"
         elseif check_box(west) then
@@ -518,7 +538,7 @@ function states.base.update(dt)
                     messages = msg.level3[3]
                 elseif event_name == "3_3.5" then
                     spring = true
-                    states.moving.pos = player.move_attempt
+                    target = player.target
                     game_state = "moving"
                     return
                 elseif event_name == "3_4" then
@@ -534,12 +554,12 @@ function states.base.update(dt)
 
             if spring then
                 update_history(old_data)
-                states.moving.pos = player.move_attempt
+                target = player.target
                 game_state = "moving"
                 return
             end
 
-            if move_box(player.move_attempt, player.facing) then
+            if move_box(player.target, player.facing) then
                 update_history(old_data)
                 player.moved_to = player.move()
 
@@ -568,17 +588,16 @@ end
 states.moving.draw = states.base.draw
 
 function states.moving.update(dt)
-    local pos = states.moving.pos
     move_timer = move_timer + dt
     frame_timer = frame_timer + dt
 
     if move_timer > 0.05 then
-        if not move_box(pos, player.facing) then
+        if not move_box(target, player.facing) then
             if not goal_in_level() and not solved_levels[current_level] then
                 clear_level()
             end
 
-            if states.moving.has_moved and (data[pos] == id.box_on_plate or data[pos] == id.box_on_bplate) then
+            if states.moving.has_moved and (data[target] == id.box_on_plate or data[target] == id.box_on_bplate) then
                 flip_tiles()
                 states.moving.stop_sound = sounds.click
             else
@@ -594,7 +613,7 @@ function states.moving.update(dt)
             states.moving.has_moved = false
             game_state = "base"
         else
-            if not states.moving.has_moved and data[pos] == id.plate then
+            if not states.moving.has_moved and data[target] == id.plate then
                 flip_tiles()
             end
             states.moving.has_moved = true
@@ -606,13 +625,13 @@ function states.moving.update(dt)
         end
 
         if player.facing == dirs.north then
-            pos = pos - level.width
+            target = target - level.width
         elseif player.facing == dirs.east then
-            pos = pos + 1
+            target = target + 1
         elseif player.facing == dirs.south then
-            pos = pos + level.width
+            target = target + level.width
         elseif player.facing == dirs.west then
-            pos = pos - 1
+            target = target - 1
         end
         move_timer = move_timer - 0.05
     end
@@ -639,7 +658,7 @@ function states.message.draw()
     love.graphics.draw(portraits[current_message[1]], 24, 24)
 end
 
-function states.message.update(dt)
+function states.message.update()
     if event_name == "3_1" then
         sounds.door:play()
         game_state = "event_3_1"
@@ -912,8 +931,8 @@ function love.keypressed(key)
             nuke_doors()
         end
     elseif key == "=" then
-        _, _, flags = love.window.getMode()
-        width, height = love.window.getDesktopDimensions(flags.display)
+        local _, _, flags = love.window.getMode()
+        local width, height = love.window.getDesktopDimensions(flags.display)
         local new_scale = math.floor(scale) + 1
         if 256 * new_scale > width or 224 * new_scale > height then
             new_scale = new_scale - 1
