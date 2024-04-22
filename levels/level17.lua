@@ -14,9 +14,9 @@ return {
   properties = {},
   tilesets = {
     {
-      name = "level_tiles",
+      name = "level_tiles2",
       firstgid = 1,
-      filename = "level_tiles.tsx"
+      filename = "level_tiles2.tsx"
     }
   },
   layers = {

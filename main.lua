@@ -28,6 +28,7 @@ local portraits = {}
 local key_pressed = false
 local offset_x, offset_y = 0, 0
 local width, height, flags = 0, 0, {}
+local tilesets = {}
 
 local msg = require("msg")
 
@@ -66,7 +67,6 @@ for i, v in ipairs(arg) do
 
         if tonumber(arg[i + 1]) > 3 then
             events.level3 = {}
-            spring = true
         end
 
         current_level = "level" .. arg[i + 1]
@@ -295,8 +295,22 @@ local function change_level(level_name, pos, open)
         return
     end
 
+    if not spring and level_ids[level_name] > 3 then
+        spring = true
+        player.sprite = "spring"
+    end
+
+    local old_tileset
+    if level.tilesets then
+        old_tileset = level.tilesets[1].name
+    end
+
     history = {}
     level = require("levels." .. level_name)
+
+    if level.tilesets[1].name ~= old_tileset then
+        sheet = tilesets[level.tilesets[1].name]
+    end
 
     data = copy_table(level.layers[1].data)
     load_objects()
@@ -828,7 +842,11 @@ function love.load()
     love.window.setMode(256 * scale, 224 * scale, { resizable = true, minwidth = 512, minheight = 448 })
     width, height, flags = love.window.getMode()
     love.graphics.setDefaultFilter("nearest", "nearest")
-    sheet = love.graphics.newImage("graphics/level_tiles.png")
+    tilesets = {
+        level_tiles = love.graphics.newImage("graphics/level_tiles.png"),
+        level_tiles2 = love.graphics.newImage("graphics/level_tiles2.png"),
+    }
+    sheet = tilesets.level_tiles
     msg_font = love.graphics.newFont("graphics/PixeloidSans.ttf", 9, "mono")
     message_text = love.graphics.newText(msg_font, "")
     portraits = {

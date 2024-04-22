@@ -1,19 +1,13 @@
-return {
-   "level1",
-   "level2",
-   "level3",
-   "level4",
-   "level5",
-   "level6",
-   "level7",
-   "level8",
-   "level9",
-   "level10",
-   "level11",
-   "level12",
-   "level13",
-   "level14",
-   "level15",
-   "level16",
-   "level17",
-}
+local list = {}
+local count = 1
+
+while true do
+    if love.filesystem.getInfo("levels/level" .. tostring(count) .. ".lua") then
+        list[count] = "level" .. tostring(count)
+    else
+        break
+    end
+    count = count + 1
+end
+
+return list
