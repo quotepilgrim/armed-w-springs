@@ -2,6 +2,7 @@ local level = {}
 local level_names = require("levels.list")
 local id = require("id")
 local current_level = "level1"
+local dropped_levels = {}
 local data = {}
 local old_data = {}
 local states = {
@@ -290,14 +291,9 @@ local function load_objects()
     end
 end
 
-local function change_level(level_name, pos, open)
+local function change_level(level_name, pos, open, dropped)
     if not level_name then
         return
-    end
-
-    if not spring and level_ids[level_name] > 3 then
-        spring = true
-        player.sprite = "spring"
     end
 
     local old_tileset
@@ -306,7 +302,20 @@ local function change_level(level_name, pos, open)
     end
 
     history = {}
-    level = require("levels." .. level_name)
+    if dropped then
+        level = dofile(level_name)
+        level_names[#level_names + 1] = level_name
+        level_ids[level_name] = #level_names
+    elseif dropped_levels[level_name] then
+        level = dofile(level_name)
+    else
+        level = require("levels." .. level_name)
+    end
+
+    if not spring and level_ids[level_name] > 3 then
+        spring = true
+        player.sprite = "spring"
+    end
 
     if level.tilesets[1].name ~= old_tileset then
         sheet = tilesets[level.tilesets[1].name]
@@ -389,8 +398,17 @@ local function rescale(w, h)
     else
         scale = h / 224
     end
-    offset_x = math.floor((w / scale - 256) / 2)
-    offset_y = math.floor((h / scale - 224) / 2)
+    offset_x = (w / scale - 256) / 2
+    offset_y = (h / scale - 224) / 2
+end
+
+local function draw_letterbox()
+    love.graphics.setColor(0.1, 0.1, 0.1)
+    love.graphics.rectangle("fill", -offset_x + 0, 0, offset_x, 224)
+    love.graphics.rectangle("fill", 256, 0, offset_x, 224)
+    love.graphics.rectangle("fill", 0, -offset_y + 0, 256, offset_y)
+    love.graphics.rectangle("fill", 0, 224, 256, offset_y)
+    love.graphics.setColor(1, 1, 1)
 end
 
 function player.move()
@@ -477,12 +495,8 @@ function states.base.draw()
         player.x * level.tilewidth,
         player.y * level.tileheight - 10
     )
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.rectangle("fill", 0, 0, 8, 232)
-    love.graphics.rectangle("fill", 0, 0, 264, 8)
-    love.graphics.rectangle("fill", 264, 0, 8, 232)
-    love.graphics.rectangle("fill", 0, 232, 264, 8)
-    love.graphics.setColor(1, 1, 1)
+    love.graphics.translate(8, 8)
+    draw_letterbox()
 end
 
 function states.base.update(dt)
@@ -776,6 +790,7 @@ function states.title.draw()
     love.graphics.scale(scale)
     love.graphics.translate(offset_x, offset_y)
     love.graphics.draw(title, 0, 0)
+    draw_letterbox()
 end
 
 function states.title.update(dt)
@@ -1005,7 +1020,7 @@ function love.keypressed(key)
 
         reset_level()
     elseif key == "f1" then
-        print(current_level, solved_levels.count, #level_names)
+        print(current_level, level_ids)
     elseif key == "f11" then
         if not love.window.getFullscreen() then
             width, height, flags = love.window.getMode()
@@ -1025,4 +1040,10 @@ function love.resize(w, h)
     WindowWidth = w
     WindowHeight = h
     rescale(w, h)
+end
+
+function love.filedropped(file)
+    local filename = file:getFilename()
+    dropped_levels[filename] = true
+    change_level(filename, nil, nil, true)
 end
