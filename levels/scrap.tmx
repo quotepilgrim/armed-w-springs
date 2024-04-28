@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="33" height="29" tilewidth="16" tileheight="16" infinite="0" nextlayerid="4" nextobjectid="1">
  <tileset firstgid="1" source="level_tiles.tsx"/>
- <layer id="1" name="base" width="33" height="29">
+ <layer id="1" name="base" width="33" height="29" visible="0">
   <data encoding="csv">
 32,37,37,37,37,37,37,37,33,37,37,37,37,37,37,37,32,37,37,37,37,37,37,37,33,37,37,37,37,37,37,37,32,
 38,1,2,2,2,2,2,2,41,2,2,2,2,2,2,3,38,1,2,2,2,2,2,2,41,2,2,2,2,2,2,3,38,

@@ -136,6 +136,9 @@ local function check_wall(pos, is_box)
             return true
         end
     else
+        if data[pos] == id.cage then
+            return true
+        end
         for _, v in pairs(id.holes) do
             if data[pos] == v then
                 return true
@@ -902,8 +905,10 @@ function love.load()
     solved_levels.count = 0
     change_level(current_level)
 
-    for i = 1, 8 do
-        for j = 1, 8 do
+    local rows = tilesets[level.tilesets[1].name]:getWidth() / level.tilewidth
+    local cols = tilesets[level.tilesets[1].name]:getHeight() / level.tileheight
+    for i = 1, rows do
+        for j = 1, cols do
             tiles[i + (j - 1) * 8] = love.graphics.newQuad(
                 (i - 1) * level.tilewidth,
                 (j - 1) * level.tileheight,

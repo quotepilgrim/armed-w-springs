@@ -2,6 +2,7 @@ local id = {}
 
 local t = {
     floor = 10,
+    cage = 24,
     goal = 25,
     box = 26,
     box_on_goal = 27,
@@ -17,6 +18,7 @@ local t = {
     box_floor = 58,
     oneway = 59,
     box_on_oneway = 63,
+    box_in_cage = 64,
 }
 
 for k, v in pairs(t) do
@@ -67,6 +69,7 @@ id.boxes = {
     t.box_on_bplate,
     t.box_on_box,
     t.box_on_oneway,
+    t.box_in_cage,
 }
 
 id.doors = {
@@ -95,6 +98,7 @@ id.box_to_floor = {
     [t.box_on_bplate] = t.bplate,
     [t.box_on_box] = t.box_floor,
     [t.box_on_oneway] = t.oneway,
+    [t.box_in_cage] = t.cage,
 }
 
 id.floor_to_box = {}
