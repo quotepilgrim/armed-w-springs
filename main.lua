@@ -483,7 +483,7 @@ end
 
 function states.base.draw()
     love.graphics.scale(scale, scale)
-    love.graphics.translate(offset_x - 8, offset_y - 8)
+    love.graphics.translate(offset_x - level.tilewidth / 2, offset_y - level.tilewidth / 2)
     for i, v in ipairs(data) do
         love.graphics.draw(
             sheet,
@@ -498,8 +498,9 @@ function states.base.draw()
         player.x * level.tilewidth,
         player.y * level.tileheight - 10
     )
-    love.graphics.translate(8, 8)
+    love.graphics.translate(level.tilewidth / 2, level.tilewidth / 2)
     draw_letterbox()
+    love.graphics.translate(-level.tilewidth / 2, -level.tilewidth / 2)
 end
 
 function states.base.update(dt)
