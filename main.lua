@@ -824,12 +824,14 @@ end
 
 states["end"].draw = function()
     love.graphics.scale(scale)
-    love.graphics.translate(-8, -8)
+    love.graphics.translate(offset_x - 8, offset_y - 8)
     love.graphics.draw(message_box, 16, 16)
     love.graphics.setColor(0, 0, 0)
     love.graphics.draw(message_text, 25, 21)
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(message_text, 24, 20)
+    love.graphics.translate(8, 8)
+    draw_letterbox()
 end
 
 states["end"].update = function()
