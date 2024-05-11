@@ -405,13 +405,17 @@ local function rescale(w, h)
     offset_y = (h / scale - 224) / 2
 end
 
-local function draw_letterbox()
+local function draw_letterbox(ox, oy)
+    ox = ox or 0
+    oy = oy or 0
+    love.graphics.translate(ox, oy)
     love.graphics.setColor(0.1, 0.1, 0.1)
     love.graphics.rectangle("fill", -offset_x + 0, 0, offset_x, 224)
     love.graphics.rectangle("fill", 256, 0, offset_x, 224)
     love.graphics.rectangle("fill", 0, -offset_y + 0, 256, offset_y)
     love.graphics.rectangle("fill", 0, 224, 256, offset_y)
     love.graphics.setColor(1, 1, 1)
+    love.graphics.translate(-ox, -oy)
 end
 
 function player.move()
@@ -483,7 +487,7 @@ end
 
 function states.base.draw()
     love.graphics.scale(scale, scale)
-    love.graphics.translate(offset_x - level.tilewidth / 2, offset_y - level.tilewidth / 2)
+    love.graphics.translate(offset_x - 8, offset_y - 8)
     for i, v in ipairs(data) do
         love.graphics.draw(
             sheet,
@@ -498,9 +502,7 @@ function states.base.draw()
         player.x * level.tilewidth,
         player.y * level.tileheight - 10
     )
-    love.graphics.translate(level.tilewidth / 2, level.tilewidth / 2)
-    draw_letterbox()
-    love.graphics.translate(-level.tilewidth / 2, -level.tilewidth / 2)
+    draw_letterbox(8, 8)
 end
 
 function states.base.update(dt)
@@ -824,13 +826,12 @@ end
 
 states["end"].draw = function()
     love.graphics.scale(scale)
-    love.graphics.translate(offset_x - 8, offset_y - 8)
-    love.graphics.draw(message_box, 16, 16)
+    love.graphics.translate(offset_x, offset_y)
+    love.graphics.draw(message_box, 8, 8)
     love.graphics.setColor(0, 0, 0)
     love.graphics.draw(message_text, 25, 21)
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(message_text, 24, 20)
-    love.graphics.translate(8, 8)
     draw_letterbox()
 end
 
